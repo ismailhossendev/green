@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useBrand, useAuth } from '../../App';
 import { inventoryAPI, customerAPI, salesAPI, reportsAPI } from '../../services/api';
@@ -6,9 +7,20 @@ import { FiPackage, FiUsers, FiShoppingCart, FiDollarSign, FiTrendingUp, FiTrend
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import './Dashboard.css';
 
+const useIsMobile = () => {
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 640);
+    React.useEffect(() => {
+        const handler = () => setIsMobile(window.innerWidth <= 640);
+        window.addEventListener('resize', handler);
+        return () => window.removeEventListener('resize', handler);
+    }, []);
+    return isMobile;
+};
+
 const Dashboard = () => {
     const { currentBrand } = useBrand();
     const { user } = useAuth();
+    const isMobile = useIsMobile();
 
     // Fetch inventory summary
     const { data: inventorySummary } = useQuery({
@@ -118,7 +130,7 @@ const Dashboard = () => {
                         <h3 className="card-title">Sales & Collection Overview</h3>
                     </div>
                     <div className="chart-container">
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
                             <AreaChart data={salesChartData}>
                                 <defs>
                                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -152,14 +164,14 @@ const Dashboard = () => {
                         <h3 className="card-title">Stock Distribution</h3>
                     </div>
                     <div className="chart-container">
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
                             <PieChart>
                                 <Pie
                                     data={stockDistribution}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
+                                    innerRadius={isMobile ? 40 : 60}
+                                    outerRadius={isMobile ? 70 : 100}
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
