@@ -23,8 +23,16 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware - open CORS (API is secured by JWT on all routes)
-app.use(cors({ origin: true, credentials: true }));
+// Manual CORS middleware — handles preflight OPTIONS and all cross-origin requests
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    next();
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -68,10 +76,10 @@ app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
-║   🌿 Green Tel & Green Star Business Management System     ║
+║   🌿 Green Tel & Green Star Business Management System     
 ║                                                            ║
-║   Server running on port ${PORT}                             ║
-║   Environment: ${process.env.NODE_ENV || 'development'}                          ║
+║   Server running on port ${PORT}                           ║
+║   Environment: ${process.env.NODE_ENV || 'development'}    ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
   `);
