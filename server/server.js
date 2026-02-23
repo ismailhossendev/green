@@ -83,4 +83,16 @@ app.listen(PORT, () => {
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
   `);
+
+    // Keep-alive: self-ping every 4 minutes to prevent Render free tier from sleeping
+    if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
+        const https = require('https');
+        setInterval(() => {
+            https.get(`${process.env.RENDER_EXTERNAL_URL}/api/health`, (res) => {
+                console.log(`Keep-alive ping: ${res.statusCode}`);
+            }).on('error', (err) => {
+                console.error('Keep-alive ping failed:', err.message);
+            });
+        }, 4 * 60 * 1000); // Every 4 minutes
+    }
 });
