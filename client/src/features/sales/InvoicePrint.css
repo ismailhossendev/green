@@ -1,0 +1,221 @@
+.invoice-print-modal {
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.invoice-print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.invoice-print-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.invoice-print-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.invoice-print-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    background: white;
+}
+
+/* Print Preview Styles */
+.invoice-print {
+    color: #1a1a1a;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.invoice-print .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--greentel-primary);
+}
+
+.invoice-print .brand-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.invoice-print .brand-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.invoice-print .brand-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--greentel-primary);
+}
+
+.invoice-print .brand-address {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.invoice-print .invoice-info {
+    text-align: right;
+}
+
+.invoice-print .invoice-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--greentel-primary);
+    margin-bottom: 10px;
+}
+
+.invoice-print .invoice-no {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.invoice-print .invoice-date {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.invoice-print .parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.invoice-print .party-box {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid var(--greentel-primary);
+}
+
+.invoice-print .party-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.invoice-print .party-name {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.invoice-print .party-details {
+    font-size: 13px;
+    color: #555;
+    margin-top: 5px;
+}
+
+.invoice-print table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.invoice-print th {
+    background: var(--greentel-primary);
+    color: white;
+    padding: 12px 10px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.invoice-print td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+}
+
+.invoice-print tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.invoice-print .text-right {
+    text-align: right;
+}
+
+.invoice-print .text-center {
+    text-align: center;
+}
+
+.invoice-print .summary {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.invoice-print .summary-table {
+    width: 300px;
+}
+
+.invoice-print .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.invoice-print .summary-row.total {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--greentel-primary);
+    border-bottom: none;
+    padding-top: 15px;
+}
+
+.invoice-print .summary-row.dues {
+    color: #dc3545;
+}
+
+.invoice-print .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px dashed #ccc;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.invoice-print .signature-box {
+    text-align: center;
+}
+
+.invoice-print .signature-line {
+    border-top: 1px solid #333;
+    padding-top: 10px;
+    margin-top: 40px;
+    font-size: 12px;
+}
+
+.invoice-print .note {
+    font-size: 12px;
+    color: #666;
+    margin-top: 20px;
+    padding: 10px;
+    background: #fff8e1;
+    border-radius: 4px;
+}

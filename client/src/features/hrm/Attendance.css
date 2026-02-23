@@ -1,0 +1,255 @@
+.attendance-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+/* Attendance Type Card */
+.attendance-type-card {
+    grid-column: span 2;
+}
+
+.attendance-type-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.attendance-type-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.attendance-type-btn:hover {
+    border-color: var(--greentel-primary);
+    color: var(--greentel-primary);
+}
+
+.attendance-type-btn.active.check-in {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.attendance-type-btn.active.check-out {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+/* Location Card */
+.location-captured {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.location-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.location-coord {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.location-coord span {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-right: 0.5rem;
+}
+
+.location-capture {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    gap: 1rem;
+}
+
+.location-error {
+    color: var(--danger);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* Photo Capture */
+.photo-capture {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.camera-placeholder {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--border-color);
+}
+
+.camera-view {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+.camera-view video {
+    width: 100%;
+    border-radius: var(--radius-md);
+    transform: scaleX(-1);
+}
+
+.camera-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-capture {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.photo-preview img {
+    width: 100%;
+    max-width: 300px;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--success);
+    transform: scaleX(-1);
+}
+
+/* Submit Card */
+.attendance-submit-card {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+.attendance-summary {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.summary-item svg {
+    font-size: 1.25rem;
+}
+
+.summary-item svg.captured {
+    color: var(--success);
+}
+
+.btn-submit-attendance {
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success), #059669);
+    border: none;
+    color: white;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning), #D97706);
+    border: none;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #D97706, #B45309);
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .attendance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .attendance-type-card,
+    .attendance-submit-card {
+        grid-column: span 1;
+    }
+
+    .attendance-type-buttons {
+        flex-direction: column;
+    }
+
+    .attendance-summary {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+    }
+}
