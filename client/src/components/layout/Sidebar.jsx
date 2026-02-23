@@ -24,7 +24,7 @@ const menuItems = [
     { path: '/stock-summary', icon: FiPackage, label: 'Stock Summary', roles: ['Admin', 'Manager'] },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ open, onClose }) => {
     const { currentBrand } = useBrand();
     const { user, logout } = useAuth();
     const location = useLocation();
@@ -33,8 +33,13 @@ const Sidebar = () => {
         item.roles.includes(user?.role || 'Staff')
     );
 
+    const handleNavClick = () => {
+        // Close sidebar on mobile when a link is clicked
+        if (window.innerWidth <= 1024) onClose?.();
+    };
+
     return (
-        <aside className={`sidebar ${currentBrand === 'Green Star' ? 'theme-greenstar' : 'theme-greentel'}`}>
+        <aside className={`sidebar ${currentBrand === 'Green Star' ? 'theme-greenstar' : 'theme-greentel'} ${open ? 'open' : ''}`}>
             <div className="sidebar-header">
                 <img
                     src={getBrandLogo(currentBrand)}
@@ -55,6 +60,7 @@ const Sidebar = () => {
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        onClick={handleNavClick}
                         className={({ isActive }) =>
                             `sidebar-link ${isActive || (item.path !== '/' && location.pathname.startsWith(item.path)) ? 'active' : ''}`
                         }

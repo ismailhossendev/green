@@ -2,14 +2,14 @@ import { useBrand, useAuth } from '../../App';
 import { FiSearch, FiBell, FiMenu } from 'react-icons/fi';
 import './Header.css';
 
-const Header = () => {
+const Header = ({ onMenuToggle }) => {
     const { currentBrand, setCurrentBrand } = useBrand();
     const { user } = useAuth();
 
     return (
         <header className="header">
             <div className="header-left">
-                <button className="header-menu-btn">
+                <button className="header-menu-btn" onClick={onMenuToggle} aria-label="Toggle menu">
                     <FiMenu />
                 </button>
 

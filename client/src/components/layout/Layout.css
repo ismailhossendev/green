@@ -19,8 +19,28 @@
     overflow-y: auto;
 }
 
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 99;
+}
+
 @media (max-width: 1024px) {
     .layout-main {
         margin-left: 0;
+    }
+
+    .sidebar-overlay {
+        display: block;
+    }
+}
+
+@media (max-width: 640px) {
+    .layout-content {
+        padding: 1rem;
     }
 }
