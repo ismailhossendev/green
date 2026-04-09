@@ -77,13 +77,15 @@ const InvoiceCreate = () => {
         const response = await inventoryAPI.getProducts({
             brand: currentBrand,
             search: query,
+            type: 'Product', // Hide Packets from POS selection
             stockStatus: 'in-stock', // Only show in-stock items
             limit: 20
         });
         return response.data.products.map(p => ({
             ...p,
             label: p.modelName,
-            subLabel: `Stock: ${p.stock.goodQty} • ${formatCurrency(p.salesPrice)}`
+            subLabel: `[${p.type}] Stock: ${p.stock.goodQty} • ${formatCurrency(p.salesPrice)}`,
+            className: p.type === 'Packet' ? 'packet-option' : ''
         }));
     };
 
@@ -115,7 +117,7 @@ const InvoiceCreate = () => {
                     {
                         id: Date.now(),
                         product: product,
-                        type: 'Product', // Default type
+                        type: product.type,
                         qty: 1,
                         price: price,
                         isCombined: false
@@ -274,7 +276,12 @@ const InvoiceCreate = () => {
                                 items.map((item) => (
                                     <div key={item.id} className="item-row">
                                         <div style={{ flex: 3 }}>
-                                            <div className="font-medium text-gray-800">{item.product.modelName}</div>
+                                            <div className="font-medium text-gray-800 flex items-center gap-2">
+                                                {item.product.modelName}
+                                                {item.type === 'Packet' && (
+                                                    <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full border border-green-200">Packet</span>
+                                                )}
+                                            </div>
                                             <div className="text-xs text-gray-500">{item.product.description}</div>
                                         </div>
 

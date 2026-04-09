@@ -65,6 +65,7 @@ router.get('/', protect, canAccessModule('inventory'), async (req, res) => {
 
         const products = await Product.find(query)
             .populate('supplier', 'name')
+            .populate('linkedPacket', 'modelName purchasePrice')
             .skip((page - 1) * limit)
             .limit(parseInt(limit))
             .sort(sort);
@@ -135,7 +136,9 @@ router.get('/summary', protect, canAccessModule('inventory'), async (req, res) =
 // @access  Private
 router.get('/:id', protect, canAccessModule('inventory'), async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id).populate('supplier', 'name');
+        const product = await Product.findById(req.params.id)
+            .populate('supplier', 'name')
+            .populate('linkedPacket', 'modelName purchasePrice');
 
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
@@ -153,9 +156,9 @@ router.get('/:id', protect, canAccessModule('inventory'), async (req, res) => {
 // @access  Private (Admin, Manager)
 router.post('/', protect, authorize('Admin', 'Manager'), async (req, res) => {
     try {
-        const { modelName, brand, type, purchasePrice, salesPrice, dealerPrice, supplier, description } = req.body;
+        const { modelName, brand, type, purchasePrice, salesPrice, dealerPrice, supplier, description, linkedPacket, linkedPacketQty } = req.body;
 
-        const product = await Product.create({
+        const productData = {
             modelName,
             brand,
             type,
@@ -164,7 +167,14 @@ router.post('/', protect, authorize('Admin', 'Manager'), async (req, res) => {
             dealerPrice,
             supplier,
             description
-        });
+        };
+
+        if (type === 'Product') {
+            if (linkedPacket) productData.linkedPacket = linkedPacket;
+            if (linkedPacketQty) productData.linkedPacketQty = linkedPacketQty;
+        }
+
+        const product = await Product.create(productData);
 
         res.status(201).json(product);
     } catch (error) {
@@ -178,6 +188,10 @@ router.post('/', protect, authorize('Admin', 'Manager'), async (req, res) => {
 // @access  Private (Admin, Manager)
 router.put('/:id', protect, authorize('Admin', 'Manager'), async (req, res) => {
     try {
+        if (req.body.linkedPacket === "") {
+            req.body.linkedPacket = null;
+        }
+
         const product = await Product.findByIdAndUpdate(
             req.params.id,
             req.body,

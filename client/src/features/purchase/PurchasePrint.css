@@ -1,0 +1,217 @@
+.purchase-print-modal {
+    width: 95%;
+    max-width: 900px;
+    max-height: 90vh;
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.purchase-print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.purchase-print-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.purchase-print-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.purchase-print-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    background: white;
+}
+
+/* Print Preview Styles */
+.purchase-print {
+    color: #000;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    line-height: 1.2;
+}
+
+.purchase-print .voucher-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #000;
+}
+
+.purchase-print .brand-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.purchase-print .brand-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #000;
+}
+
+.purchase-print .brand-address {
+    font-size: 10px;
+    color: #333;
+    margin-top: 2px;
+}
+
+.purchase-print .voucher-info {
+    text-align: right;
+}
+
+.purchase-print .voucher-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+.purchase-print .voucher-no {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.purchase-print .voucher-date {
+    font-size: 11px;
+    color: #333;
+    margin-top: 2px;
+}
+
+.purchase-print .parties {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.purchase-print .party-box {
+    padding: 10px;
+    background: #fff;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    border-left: 4px solid #000;
+}
+
+.purchase-print .party-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.purchase-print .party-name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.purchase-print .party-details {
+    font-size: 11px;
+    color: #333;
+    margin-top: 2px;
+}
+
+.purchase-print table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+.purchase-print th {
+    background: #f0f0f0;
+    color: #000;
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid #ccc;
+}
+
+.purchase-print td {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    font-size: 11px;
+}
+
+.purchase-print tr:nth-child(even) {
+    background: #fff;
+}
+
+.purchase-print .text-right {
+    text-align: right;
+}
+
+.purchase-print .text-center {
+    text-align: center;
+}
+
+.purchase-print .summary {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.purchase-print .summary-table {
+    width: 250px;
+}
+
+.purchase-print .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11px;
+}
+
+.purchase-print .summary-row.total {
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+    border-bottom: 2px solid #000;
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.purchase-print .footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px dashed #999;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.purchase-print .signature-box {
+    text-align: center;
+}
+
+.purchase-print .signature-line {
+    border-top: 1px solid #000;
+    padding-top: 5px;
+    margin-top: 40px;
+    font-size: 10px;
+}
+
+.purchase-print .note {
+    font-size: 10px;
+    color: #333;
+    margin-top: 10px;
+    padding: 6px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}

@@ -3,10 +3,12 @@ import { supplierAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
 import { FiPlus, FiSearch, FiTruck } from 'react-icons/fi';
 import { useState } from 'react';
+import SupplierCreate from './SupplierCreate';
 
 const SupplierList = () => {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const { data, isLoading } = useQuery({
         queryKey: ['suppliers', search, typeFilter],
@@ -22,7 +24,7 @@ const SupplierList = () => {
                     <h1 className="page-title">Suppliers</h1>
                     <p className="page-subtitle">Manage suppliers</p>
                 </div>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
                     <FiPlus /> Add Supplier
                 </button>
             </div>
@@ -103,6 +105,10 @@ const SupplierList = () => {
                     </table>
                 </div>
             </div>
+
+            {isCreateModalOpen && (
+                <SupplierCreate onClose={() => setIsCreateModalOpen(false)} />
+            )}
         </div>
     );
 };

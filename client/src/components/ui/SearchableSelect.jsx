@@ -170,7 +170,7 @@ const SearchableSelect = ({
                                 {options.map((option, index) => (
                                     <li
                                         key={option[valueKey] || index}
-                                        className={`option-item ${value && value[valueKey] === option[valueKey] ? 'selected' : ''}`}
+                                        className={`option-item ${value && value[valueKey] === option[valueKey] ? 'selected' : ''} ${option.className || ''}`}
                                         onClick={() => handleSelect(option)}
                                     >
                                         {option[labelKey]}

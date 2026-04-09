@@ -150,6 +150,17 @@ router.post('/invoices', protect, canAccessModule('sales'), async (req, res) => 
 
             // Reduce stock
             product.stock.goodQty -= item.qty;
+
+            // Reduce linked packet stock if it exists
+            if (product.linkedPacket) {
+                const packet = await Product.findById(product.linkedPacket);
+                if (packet) {
+                    const requiredQty = item.qty * (product.linkedPacketQty || 1);
+                    packet.stock.goodQty -= requiredQty;
+                    await packet.save();
+                }
+            }
+
             await product.save();
         }
 
@@ -332,6 +343,17 @@ router.delete('/invoices/:id', protect, authorize('Admin'), async (req, res) => 
             const product = await Product.findById(item.productId);
             if (product) {
                 product.stock.goodQty += item.qty;
+
+                // Rollback packet stock if applicable
+                if (product.linkedPacket) {
+                    const packet = await Product.findById(product.linkedPacket);
+                    if (packet) {
+                        const requiredQty = item.qty * (product.linkedPacketQty || 1);
+                        packet.stock.goodQty += requiredQty;
+                        await packet.save();
+                    }
+                }
+
                 await product.save();
             }
         }

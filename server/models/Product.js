@@ -44,6 +44,14 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    linkedPacket: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
+    },
+    linkedPacketQty: {
+        type: Number,
+        default: 1
+    },
     isActive: {
         type: Boolean,
         default: true

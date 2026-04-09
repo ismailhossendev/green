@@ -38,41 +38,42 @@
 
 /* Print Preview Styles */
 .invoice-print {
-    color: #1a1a1a;
-    font-family: 'Segoe UI', sans-serif;
+    color: #000;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    line-height: 1.2;
 }
 
 .invoice-print .invoice-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 3px solid var(--greentel-primary);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #000;
 }
 
 .invoice-print .brand-section {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     align-items: center;
 }
 
 .invoice-print .brand-logo {
-    width: 60px;
-    height: 60px;
+    width: 45px;
+    height: 45px;
     object-fit: contain;
 }
 
 .invoice-print .brand-name {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 700;
-    color: var(--greentel-primary);
+    color: #000;
 }
 
 .invoice-print .brand-address {
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
+    font-size: 10px;
+    color: #333;
+    margin-top: 2px;
 }
 
 .invoice-print .invoice-info {
@@ -80,78 +81,80 @@
 }
 
 .invoice-print .invoice-title {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 700;
-    color: var(--greentel-primary);
-    margin-bottom: 10px;
+    color: #000;
+    margin-bottom: 5px;
 }
 
 .invoice-print .invoice-no {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
 }
 
 .invoice-print .invoice-date {
-    font-size: 14px;
-    color: #666;
-    margin-top: 5px;
+    font-size: 11px;
+    color: #333;
+    margin-top: 2px;
 }
 
 .invoice-print .parties {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
 .invoice-print .party-box {
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid var(--greentel-primary);
+    padding: 10px;
+    background: #fff;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    border-left: 4px solid #000;
 }
 
 .invoice-print .party-label {
-    font-size: 12px;
+    font-size: 10px;
     text-transform: uppercase;
-    color: #666;
-    margin-bottom: 8px;
+    color: #333;
+    margin-bottom: 4px;
 }
 
 .invoice-print .party-name {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
 }
 
 .invoice-print .party-details {
-    font-size: 13px;
-    color: #555;
-    margin-top: 5px;
+    font-size: 11px;
+    color: #333;
+    margin-top: 2px;
 }
 
 .invoice-print table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .invoice-print th {
-    background: var(--greentel-primary);
-    color: white;
-    padding: 12px 10px;
+    background: #f0f0f0;
+    color: #000;
+    padding: 6px 8px;
     text-align: left;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
+    border: 1px solid #ccc;
 }
 
 .invoice-print td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #e0e0e0;
-    font-size: 13px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    font-size: 11px;
 }
 
 .invoice-print tr:nth-child(even) {
-    background: #fafafa;
+    background: #fff;
 }
 
 .invoice-print .text-right {
@@ -165,39 +168,42 @@
 .invoice-print .summary {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .invoice-print .summary-table {
-    width: 300px;
+    width: 250px;
 }
 
 .invoice-print .summary-row {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11px;
 }
 
 .invoice-print .summary-row.total {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
-    color: var(--greentel-primary);
-    border-bottom: none;
-    padding-top: 15px;
+    color: #000;
+    border-bottom: 2px solid #000;
+    padding-top: 8px;
+    margin-top: 4px;
 }
 
 .invoice-print .summary-row.dues {
-    color: #dc3545;
+    color: #000;
+    font-weight: 600;
 }
 
 .invoice-print .footer {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px dashed #ccc;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px dashed #999;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 20px;
 }
 
 .invoice-print .signature-box {
@@ -205,17 +211,18 @@
 }
 
 .invoice-print .signature-line {
-    border-top: 1px solid #333;
-    padding-top: 10px;
-    margin-top: 40px;
-    font-size: 12px;
+    border-top: 1px solid #000;
+    padding-top: 5px;
+    margin-top: 30px;
+    font-size: 10px;
 }
 
 .invoice-print .note {
-    font-size: 12px;
-    color: #666;
-    margin-top: 20px;
-    padding: 10px;
-    background: #fff8e1;
+    font-size: 10px;
+    color: #333;
+    margin-top: 10px;
+    padding: 6px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
     border-radius: 4px;
-}
+}

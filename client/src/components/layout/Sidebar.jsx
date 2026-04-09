@@ -22,6 +22,7 @@ const menuItems = [
     { path: '/replacement', icon: FiRefreshCw, label: 'Replacement', roles: ['Admin', 'Manager', 'Staff'] },
     { path: '/reports', icon: FiBarChart2, label: 'Reports', roles: ['Admin', 'Manager'] },
     { path: '/stock-summary', icon: FiPackage, label: 'Stock Summary', roles: ['Admin', 'Manager'] },
+    { path: '/company-summary', icon: FiBarChart2, label: 'Company Summary', roles: ['Admin', 'Manager'] },
 ];
 
 const Sidebar = ({ open, onClose }) => {

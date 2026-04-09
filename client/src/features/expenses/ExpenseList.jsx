@@ -3,11 +3,13 @@ import { expenseAPI } from '../../services/api';
 import { formatCurrency, BrandingConfig } from '../../config/brandingConfig';
 import { FiPlus, FiSearch, FiDollarSign } from 'react-icons/fi';
 import { useState } from 'react';
+import ExpenseCreate from './ExpenseCreate';
 
 const ExpenseList = () => {
     const [category, setCategory] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const { data, isLoading } = useQuery({
         queryKey: ['expenses', category, startDate, endDate],
@@ -24,7 +26,7 @@ const ExpenseList = () => {
                     <h1 className="page-title">Expenses</h1>
                     <p className="page-subtitle">Track business expenses</p>
                 </div>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
                     <FiPlus /> Add Expense
                 </button>
             </div>
@@ -116,6 +118,10 @@ const ExpenseList = () => {
                     </table>
                 </div>
             </div>
+
+            {isCreateModalOpen && (
+                <ExpenseCreate onClose={() => setIsCreateModalOpen(false)} />
+            )}
         </div>
     );
 };

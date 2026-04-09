@@ -116,18 +116,37 @@ router.get('/stats', protect, canAccessModule('replacement'), async (req, res) =
 // @access  Private
 router.get('/', protect, canAccessModule('replacement'), async (req, res) => {
     try {
-        const { dealerId, brand, status, page = 1, limit = 50 } = req.query;
+        const { dealerId, brand, status, search, page = 1, limit = 50 } = req.query;
 
         let query = {};
-        if (dealerId) query.dealer = dealerId;
         if (brand) query.brand = brand;
         if (status) query.status = status;
+        if (dealerId) query.dealer = dealerId;
+
+        // Search logic
+        if (search) {
+            // Find matching dealers
+            const matchingDealers = await Customer.find({
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { phone: { $regex: search, $options: 'i' } },
+                    { companyName: { $regex: search, $options: 'i' } }
+                ]
+            }).select('_id');
+
+            const dealerIds = matchingDealers.map(d => d._id);
+
+            query.$or = [
+                { replacementNo: { $regex: search, $options: 'i' } },
+                { dealer: { $in: dealerIds } }
+            ];
+        }
 
         const replacements = await Replacement.find(query)
-            .populate('dealer', 'name phone')
-            .populate('items.product', 'modelName')
+            .populate('dealer', 'name phone companyName address district')
+            .populate('items.product', 'modelName dealerPrice salesPrice')
             .populate('createdBy', 'name')
-            .skip((page - 1) * limit)
+            .skip((parseInt(page) - 1) * parseInt(limit))
             .limit(parseInt(limit))
             .sort({ date: -1 });
 

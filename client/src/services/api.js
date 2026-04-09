@@ -86,7 +86,8 @@ export const purchaseAPI = {
     getPurchases: (params) => api.get('/purchase', { params }),
     getPurchase: (id) => api.get(`/purchase/${id}`),
     getSupplierWise: () => api.get('/purchase/supplier-wise'),
-    createPurchase: (data) => api.post('/purchase', data)
+    createPurchase: (data) => api.post('/purchase', data),
+    deletePurchase: (id) => api.delete(`/purchase/${id}`)
 };
 
 // Supplier API
@@ -185,7 +186,10 @@ export const reportsAPI = {
     getPartyCollection: (params) => api.get('/reports/collection/party-wise', { params }),
     getExpense: (params) => api.get('/reports/expense', { params }),
     getAssets: () => api.get('/reports/assets'),
-    getStockSummary: (params) => api.get('/reports/stock-summary', { params })
+    getStockSummary: (params) => api.get('/reports/stock-summary', { params }),
+    getCompanySummary: (params) => api.get('/reports/company-summary', { params }),
+    getTodayStats: (params) => api.get('/reports/today-stats', { params }),
+    getPartySummary: (params) => api.get('/reports/party-summary', { params }),
 };
 
 export default api;

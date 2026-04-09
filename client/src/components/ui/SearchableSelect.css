@@ -107,6 +107,15 @@
     background-color: var(--bg-hover);
 }
 
+.option-item.packet-option {
+    background-color: rgba(34, 197, 94, 0.08); /* Light green tint */
+}
+
+.option-item.packet-option:hover,
+.option-item.packet-option.selected {
+    background-color: rgba(34, 197, 94, 0.15); /* Slightly darker on hover */
+}
+
 .option-sublabel {
     font-size: 0.75rem;
     color: var(--text-secondary);

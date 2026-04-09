@@ -339,9 +339,16 @@ const ProductModal = ({ product, brand, onClose }) => {
         type: product?.type || 'Product',
         purchasePrice: product?.purchasePrice || '',
         salesPrice: product?.salesPrice || '',
-        packetPrice: product?.packetPrice || '',
+        linkedPacket: product?.linkedPacket?._id || product?.linkedPacket || '',
+        linkedPacketQty: product?.linkedPacketQty || 1,
         brand: brand,
     });
+
+    const { data: packetsData } = useQuery({
+        queryKey: ['packets', brand],
+        queryFn: () => inventoryAPI.getProducts({ brand, type: 'Packet', limit: 100 }),
+    });
+    const packets = packetsData?.data?.products || [];
 
     const mutation = useMutation({
         mutationFn: (data) =>
@@ -420,6 +427,36 @@ const ProductModal = ({ product, brand, onClose }) => {
                                 />
                             </div>
                         </div>
+
+                        {formData.type === 'Product' && (
+                            <div className="grid grid-cols-2">
+                                <div className="input-group">
+                                    <label className="input-label">Linked Packet</label>
+                                    <select
+                                        className="input select"
+                                        value={formData.linkedPacket}
+                                        onChange={(e) => setFormData({ ...formData, linkedPacket: e.target.value })}
+                                    >
+                                        <option value="">None</option>
+                                        {packets.map(p => (
+                                            <option key={p._id} value={p._id}>{p.modelName} (Cost: {formatCurrency(p.purchasePrice)})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {formData.linkedPacket && formData.linkedPacket !== '' && (
+                                    <div className="input-group">
+                                        <label className="input-label">Packet Qty Required</label>
+                                        <input
+                                            type="number"
+                                            className="input"
+                                            value={formData.linkedPacketQty}
+                                            onChange={(e) => setFormData({ ...formData, linkedPacketQty: Number(e.target.value) })}
+                                            min="1"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="modal-footer">

@@ -1,18 +1,43 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useBrand } from '../../App';
 import { purchaseAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
-import { FiPlus, FiSearch } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEye, FiTrash2 } from 'react-icons/fi';
 import { useState } from 'react';
+import PurchaseCreate from './PurchaseCreate';
+import PurchasePrint from './PurchasePrint';
+import toast from 'react-hot-toast';
 
 const PurchaseList = () => {
     const { currentBrand } = useBrand();
+    const queryClient = useQueryClient();
     const [search, setSearch] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [selectedPurchase, setSelectedPurchase] = useState(null);
 
     const { data, isLoading } = useQuery({
         queryKey: ['purchases', currentBrand],
         queryFn: () => purchaseAPI.getPurchases({ brand: currentBrand }),
     });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id) => purchaseAPI.deletePurchase(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['purchases']);
+            queryClient.invalidateQueries(['products']);
+            queryClient.invalidateQueries(['suppliers']);
+            toast.success('Purchase deleted and stock rolled back');
+        },
+        onError: (error) => {
+            toast.error(error.response?.data?.message || 'Failed to delete purchase');
+        }
+    });
+
+    const handleDelete = (purchase) => {
+        if (window.confirm(`Are you sure you want to delete purchase ${purchase.purchaseNo}? This will subtract ${purchase.totalQty} items from your stock and update the supplier balance.`)) {
+            deleteMutation.mutate(purchase._id);
+        }
+    };
 
     const purchases = data?.data?.purchases || [];
 
@@ -23,7 +48,7 @@ const PurchaseList = () => {
                     <h1 className="page-title">Purchase</h1>
                     <p className="page-subtitle">{currentBrand} purchases</p>
                 </div>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
                     <FiPlus /> New Purchase
                 </button>
             </div>
@@ -54,6 +79,7 @@ const PurchaseList = () => {
                                 <th>Paid</th>
                                 <th>Due</th>
                                 <th>Status</th>
+                                <th className="text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,6 +106,25 @@ const PurchaseList = () => {
                                                 {purchase.status}
                                             </span>
                                         </td>
+                                        <td className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <button 
+                                                    className="btn btn-icon btn-secondary" 
+                                                    title="View Purchase"
+                                                    onClick={() => setSelectedPurchase(purchase)}
+                                                >
+                                                    <FiEye />
+                                                </button>
+                                                <button 
+                                                    className="btn btn-icon btn-danger" 
+                                                    title="Delete & Rollback"
+                                                    onClick={() => handleDelete(purchase)}
+                                                    disabled={deleteMutation.isPending}
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
@@ -93,6 +138,18 @@ const PurchaseList = () => {
                     </table>
                 </div>
             </div>
+
+            {isCreateModalOpen && (
+                <PurchaseCreate onClose={() => setIsCreateModalOpen(false)} />
+            )}
+
+            {selectedPurchase && (
+                <PurchasePrint 
+                    purchase={selectedPurchase} 
+                    brand={currentBrand} 
+                    onClose={() => setSelectedPurchase(null)} 
+                />
+            )}
         </div>
     );
 };

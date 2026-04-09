@@ -5,7 +5,6 @@ import './InvoicePrint.css';
 
 const InvoicePrint = ({ invoice, brand, onClose }) => {
     const printRef = useRef();
-    const theme = getBrandTheme(brand);
 
     // Number to words converter
     const numberToWords = (num) => {
@@ -39,147 +38,97 @@ const InvoicePrint = ({ invoice, brand, onClose }) => {
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
-              font-family: 'Segoe UI', sans-serif; 
-              padding: 20px;
-              color: #1a1a1a;
+              font-family: 'Arial', sans-serif; 
+              padding: 10mm;
+              color: #000;
+              font-size: 10px;
+              line-height: 1.2;
             }
             .invoice-print { max-width: 800px; margin: 0 auto; }
-            .invoice-header { 
+            
+            .header-top { 
               display: flex; 
               justify-content: space-between; 
-              align-items: flex-start;
-              margin-bottom: 30px;
-              padding-bottom: 20px;
-              border-bottom: 3px solid ${theme.primary};
+              margin-bottom: 15px;
+              border-bottom: 2px solid #000;
+              padding-bottom: 8px;
             }
-            .brand-section { display: flex; gap: 15px; align-items: center; }
-            .brand-logo { width: 60px; height: 60px; object-fit: contain; }
-            .brand-name { 
-              font-size: 24px; 
-              font-weight: 700; 
-              color: ${theme.primary};
-            }
-            .brand-address { font-size: 12px; color: #666; margin-top: 5px; }
-            .invoice-info { text-align: right; }
-            .invoice-title { 
-              font-size: 28px; 
-              font-weight: 700; 
-              color: ${theme.primary};
-              margin-bottom: 10px;
-            }
-            .invoice-no { font-size: 16px; font-weight: 600; }
-            .invoice-date { font-size: 14px; color: #666; margin-top: 5px; }
+            .brand-name { font-size: 20px; font-weight: 700; text-transform: uppercase; }
+            .brand-details { font-size: 9px; margin-top: 2px; }
+            .invoice-title { font-size: 22px; font-weight: 700; text-align: right; }
             
-            .parties { 
+            .info-section { 
               display: grid; 
-              grid-template-columns: 1fr 1fr; 
-              gap: 30px; 
-              margin-bottom: 30px;
+              grid-template-columns: 1.5fr 1fr; 
+              gap: 20px; 
+              margin-bottom: 15px; 
             }
-            .party-box { 
-              padding: 15px; 
-              background: #f8f9fa; 
-              border-radius: 8px;
-              border-left: 4px solid ${theme.primary};
+            .section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #000; margin-bottom: 4px; }
+            .info-item { margin-bottom: 2px; }
+            .info-val { font-weight: 600; }
+
+            table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
+            th, td { 
+              border: 1px solid #000; 
+              padding: 3px 5px; 
+              font-size: 10px;
+              vertical-align: middle;
             }
-            .party-label { 
-              font-size: 12px; 
-              text-transform: uppercase; 
-              color: #666;
-              margin-bottom: 8px;
-            }
-            .party-name { font-size: 16px; font-weight: 600; }
-            .party-details { font-size: 13px; color: #555; margin-top: 5px; }
-            
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-            th { 
-              background: ${theme.primary}; 
-              color: white; 
-              padding: 12px 10px; 
-              text-align: left;
-              font-size: 13px;
-              font-weight: 600;
-            }
-            td { 
-              padding: 12px 10px; 
-              border-bottom: 1px solid #e0e0e0; 
-              font-size: 13px;
-            }
-            tr:nth-child(even) { background: #fafafa; }
+            th { background: #f2f2f2; font-weight: 700; text-transform: uppercase; font-size: 9px; }
             .text-right { text-align: right; }
             .text-center { text-align: center; }
             
-            .summary { 
-              display: flex; 
-              justify-content: flex-end; 
-              margin-top: 20px;
+            .footer-grid { 
+              display: grid; 
+              grid-template-columns: 1.5fr 1fr; 
+              gap: 20px;
+              margin-top: 10px;
             }
-            .summary-table { width: 300px; }
-            .summary-row { 
-              display: flex; 
-              justify-content: space-between; 
-              padding: 8px 0;
-              border-bottom: 1px solid #e0e0e0;
-            }
-            .summary-row.total { 
-              font-size: 18px; 
-              font-weight: 700; 
-              color: ${theme.primary};
-              border-bottom: none;
-              padding-top: 15px;
-            }
-            .summary-row.dues { color: #dc3545; }
             
-            .footer { 
-              margin-top: 40px; 
-              padding-top: 20px; 
-              border-top: 1px dashed #ccc;
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 30px;
+            .summary-table { width: 100%; border-collapse: collapse; }
+            .summary-table td { border: none; padding: 2px 0; font-size: 10px; border-bottom: 1px dotted #ccc; }
+            .summary-table .total-row td { border-bottom: 2px solid #000; font-weight: 700; font-size: 12px; padding-top: 5px; }
+            
+            .words-section { 
+              font-size: 9px; 
+              margin-top: 10px; 
+              padding: 5px; 
+              border: 1px solid #000;
             }
-            .signature-box { text-align: center; }
-            .signature-line { 
-              border-top: 1px solid #333; 
-              padding-top: 10px;
-              margin-top: 40px;
-              font-size: 12px;
+            .words-item { margin-bottom: 4px; }
+            .words-label { font-weight: 700; text-transform: uppercase; font-size: 8px; color: #333; }
+
+            .signature-area { 
+              margin-top: 50px; 
+              display: flex; 
+              justify-content: space-between;
+              padding: 0 20px;
             }
-            .note { 
-              font-size: 12px; 
-              color: #666; 
-              margin-top: 20px;
-              padding: 10px;
-              background: #fff8e1;
-              border-radius: 4px;
-            }
+            .signature-box { border-top: 1px solid #000; width: 150px; text-align: center; padding-top: 5px; font-size: 9px; }
             
             @media print {
               @page { size: A4; margin: 0; }
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              .invoice-print { 
-                  margin: 20mm; 
-                  max-width: none;
-                  width: auto;
-                  box-shadow: none;
-              }
+              body { padding: 10mm; }
               .no-print { display: none; }
             }
           </style>
         </head>
         <body>
           ${printContent.innerHTML}
+          <script>
+            window.onload = () => {
+              window.print();
+              window.onafterprint = () => window.close();
+            };
+          </script>
         </body>
       </html>
     `);
 
         printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 250);
     };
+
+    const netPayable = invoice.dues + (invoice.previousDues || 0);
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -199,56 +148,52 @@ const InvoicePrint = ({ invoice, brand, onClose }) => {
                 <div className="invoice-print-body" ref={printRef}>
                     <div className="invoice-print">
                         {/* Header */}
-                        <div className="invoice-header">
-                            <div className="brand-section">
-                                <img
-                                    src={getBrandLogo(brand)}
-                                    alt={brand}
-                                    className="brand-logo"
-                                    onError={(e) => e.target.style.display = 'none'}
-                                />
-                                <div>
-                                    <div className="brand-name">{brand}</div>
-                                    <div className="brand-address">
-                                        {BrandingConfig.contact.address}<br />
-                                        Phone: {BrandingConfig.contact.phone}
-                                    </div>
+                        <div className="header-top">
+                            <div>
+                                <div className="brand-name">{brand}</div>
+                                <div className="brand-details">
+                                    {BrandingConfig.contact.address}<br />
+                                    Phone: {BrandingConfig.contact.phone}
                                 </div>
                             </div>
-                            <div className="invoice-info">
+                            <div>
                                 <div className="invoice-title">INVOICE</div>
-                                <div className="invoice-no">{invoice.invoiceNo}</div>
-                                <div className="invoice-date">
-                                    Date: {new Date(invoice.date).toLocaleDateString('en-GB')}
+                                <div className="text-right">
+                                    <strong>No:</strong> {invoice.invoiceNo}<br />
+                                    <strong>Date:</strong> {new Date(invoice.date).toLocaleDateString('en-GB')}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Parties */}
-                        <div className="parties">
-                            <div className="party-box">
-                                <div className="party-label">Bill To</div>
+                        {/* Info Section */}
+                        <div className="info-section">
+                            <div>
+                                <div className="section-label">Bill To</div>
+                                <div className="info-item">
+                                    <span className="info-val" style={{ fontSize: '12px' }}>
+                                        {invoice.customer?.companyName || invoice.customer?.name}
+                                    </span>
+                                </div>
                                 {invoice.customer?.companyName && (
-                                    <div className="party-name">{invoice.customer.companyName}</div>
+                                    <div className="info-item">Prop: {invoice.customer.name}</div>
                                 )}
-                                <div className={invoice.customer?.companyName ? "party-details" : "party-name"} style={invoice.customer?.companyName ? { fontWeight: 500, fontSize: '14px' } : {}}>
-                                    {invoice.customer?.name || 'N/A'}
+                                <div className="info-item">
+                                    {invoice.customer?.address && <>{invoice.customer.address}, </>}
+                                    {invoice.customer?.district && <>{invoice.customer.district}</>}
                                 </div>
-                                <div className="party-details">
-                                    {invoice.customer?.phone && <>Phone: {invoice.customer.phone}<br /></>}
-                                    {invoice.customer?.address && <>{invoice.customer.address}<br /></>}
-                                    {invoice.customer?.district && <>District: {invoice.customer.district}</>}
-                                </div>
+                                <div className="info-item">Phone: {invoice.customer?.phone}</div>
                             </div>
-                            <div className="party-box">
-                                <div className="party-label">Previous Dues</div>
-                                <div className="party-name" style={{ color: '#dc3545' }}>
-                                    {formatCurrency(invoice.previousDues || 0)}
-                                </div>
-                                <div className="party-details">
-                                    {invoice.customer?.lastInvoiceDate
-                                        ? `Last Invoice: ${new Date(invoice.customer.lastInvoiceDate).toLocaleDateString('en-GB')}`
-                                        : 'No previous invoices'}
+                            <div>
+                                <div className="section-label">Account Summary</div>
+                                <div className="summary-table">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
+                                        <span>Previous Dues:</span>
+                                        <span className="info-val">{formatCurrency(invoice.previousDues || 0)}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
+                                        <span>Last Activity:</span>
+                                        <span>{invoice.customer?.lastInvoiceDate ? new Date(invoice.customer.lastInvoiceDate).toLocaleDateString('en-GB') : 'N/A'}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -257,104 +202,108 @@ const InvoicePrint = ({ invoice, brand, onClose }) => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th style={{ width: '40px' }}>#</th>
-                                    <th>Product</th>
-                                    <th style={{ width: '80px' }}>Type</th>
-                                    <th style={{ width: '60px' }} className="text-center">Qty</th>
-                                    <th style={{ width: '100px' }} className="text-right">Price</th>
-                                    <th style={{ width: '120px' }} className="text-right">Total</th>
+                                    <th style={{ width: '30px' }}>SL</th>
+                                    <th>Description / Items</th>
+                                    <th style={{ width: '60px' }}>Type</th>
+                                    <th style={{ width: '50px' }} className="text-center">Qty</th>
+                                    <th style={{ width: '80px' }} className="text-right">Rate</th>
+                                    <th style={{ width: '90px' }} className="text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {invoice.items?.map((item, index) => (
                                     <tr key={index}>
-                                        <td>{index + 1}</td>
+                                        <td className="text-center">{index + 1}</td>
                                         <td>
                                             {item.productName}
-                                            {item.isCombined && <span style={{ color: '#666', fontSize: '11px' }}> (Combined)</span>}
+                                            {item.isCombined && <span style={{ fontStyle: 'italic', fontSize: '9px' }}> (Combined)</span>}
                                         </td>
-                                        <td>{item.type}</td>
-                                        <td className="text-center">{item.qty}</td>
+                                        <td className="text-center">{item.type}</td>
+                                        <td className="text-center" style={{ fontWeight: 600 }}>{item.qty}</td>
                                         <td className="text-right">{formatCurrency(item.price)}</td>
-                                        <td className="text-right">{formatCurrency(item.total)}</td>
+                                        <td className="text-right" style={{ fontWeight: 600 }}>{formatCurrency(item.total)}</td>
                                     </tr>
                                 ))}
+                                {/* Empty rows to fill space if needed, though high density means we don't need many */}
                             </tbody>
                         </table>
 
-                        {/* Summary */}
-                        <div className="summary">
-                            <div className="summary-table">
-                                <div className="summary-row">
-                                    <span>Total Qty:</span>
-                                    <span>{invoice.totalQty}</span>
+                        {/* Footer Section */}
+                        <div className="footer-grid">
+                            <div>
+                                <div className="words-section">
+                                    <div className="words-item">
+                                        <div className="words-label">Invoice Amount in Words:</div>
+                                        <div style={{ fontStyle: 'italic' }}>{numberToWords(invoice.grandTotal)}</div>
+                                    </div>
+                                    {netPayable > 0 && (
+                                        <div className="words-item" style={{ marginTop: '5px', borderTop: '1px solid #eee', paddingTop: '3px' }}>
+                                            <div className="words-label">Total Net Payable in Words:</div>
+                                            <div style={{ fontStyle: 'italic', fontWeight: 600 }}>{numberToWords(netPayable)}</div>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="summary-row">
-                                    <span>Sub Total:</span>
-                                    <span>{formatCurrency(invoice.subTotal)}</span>
-                                </div>
-                                {invoice.discount > 0 && (
-                                    <div className="summary-row">
-                                        <span>Discount{invoice.discountPercent ? ` (${invoice.discountPercent}%)` : ''}:</span>
-                                        <span>- {formatCurrency(invoice.discount)}</span>
+                                {invoice.note && (
+                                    <div style={{ marginTop: '10px', fontSize: '9px' }}>
+                                        <strong>Note:</strong> {invoice.note}
                                     </div>
                                 )}
-                                {invoice.rebate > 0 && (
-                                    <div className="summary-row">
-                                        <span>Rebate:</span>
-                                        <span>- {formatCurrency(invoice.rebate)}</span>
-                                    </div>
-                                )}
-                                <div className="summary-row total">
-                                    <span>Grand Total:</span>
-                                    <span>{formatCurrency(invoice.grandTotal)}</span>
-                                </div>
-                                <div className="summary-row">
-                                    <span>Paid Amount:</span>
-                                    <span style={{ color: '#28a745' }}>{formatCurrency(invoice.paidAmount)}</span>
-                                </div>
-                                {(invoice.previousDues || 0) > 0 && (
-                                    <div className="summary-row">
-                                        <span>Previous Dues:</span>
-                                        <span style={{ color: '#dc3545' }}>{formatCurrency(invoice.previousDues)}</span>
-                                    </div>
-                                )}
-                                {invoice.dues > 0 && (
-                                    <div className="summary-row dues">
-                                        <span>Current Due:</span>
-                                        <span>{formatCurrency(invoice.dues)}</span>
-                                    </div>
-                                )}
-                                {(invoice.previousDues || 0) > 0 && (
-                                    <div className="summary-row" style={{ fontWeight: 700, fontSize: '15px', paddingTop: '10px', borderTop: '2px solid #333' }}>
-                                        <span>Net Payable:</span>
-                                        <span style={{ color: '#dc3545' }}>{formatCurrency(invoice.dues + (invoice.previousDues || 0))}</span>
-                                    </div>
-                                )}
+                            </div>
+
+                            <div>
+                                <table className="summary-table">
+                                    <tr>
+                                        <td>Total Quantity:</td>
+                                        <td className="text-right">{invoice.totalQty}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sub Total:</td>
+                                        <td className="text-right">{formatCurrency(invoice.subTotal)}</td>
+                                    </tr>
+                                    {invoice.discount > 0 && (
+                                        <tr>
+                                            <td>Discount ({invoice.discountPercent || 0}%):</td>
+                                            <td className="text-right">- {formatCurrency(invoice.discount)}</td>
+                                        </tr>
+                                    )}
+                                    {invoice.rebate > 0 && (
+                                        <tr>
+                                            <td>Rebate:</td>
+                                            <td className="text-right">- {formatCurrency(invoice.rebate)}</td>
+                                        </tr>
+                                    )}
+                                    <tr className="total-row">
+                                        <td>Grand Total:</td>
+                                        <td className="text-right">{formatCurrency(invoice.grandTotal)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Paid Amount:</td>
+                                        <td className="text-right">{formatCurrency(invoice.paidAmount)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Current Due:</td>
+                                        <td className="text-right">{formatCurrency(invoice.dues)}</td>
+                                    </tr>
+                                    {(invoice.previousDues || 0) > 0 && (
+                                        <>
+                                            <tr>
+                                                <td>Previous Dues:</td>
+                                                <td className="text-right">{formatCurrency(invoice.previousDues)}</td>
+                                            </tr>
+                                            <tr style={{ background: '#eee', fontWeight: 700 }}>
+                                                <td style={{ padding: '4px' }}>Net Payable:</td>
+                                                <td className="text-right" style={{ padding: '4px' }}>{formatCurrency(netPayable)}</td>
+                                            </tr>
+                                        </>
+                                    )}
+                                </table>
                             </div>
                         </div>
 
-                        {/* Amount in Words */}
-                        <div style={{ marginTop: '10px', padding: '8px 12px', background: '#f0f4f8', borderRadius: '6px', borderLeft: `4px solid ${theme.primary}` }}>
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#555' }}>In Words: </span>
-                            <span style={{ fontSize: '12px', fontStyle: 'italic', color: '#333' }}>{numberToWords(invoice.grandTotal)}</span>
-                        </div>
-
-                        {/* Note */}
-                        {invoice.note && (
-                            <div className="note">
-                                <strong>Note:</strong> {invoice.note}
-                            </div>
-                        )}
-
-                        {/* Footer */}
-                        <div className="footer">
-                            <div className="signature-box">
-                                <div className="signature-line">Customer Signature</div>
-                            </div>
-                            <div className="signature-box">
-                                <div className="signature-line">Authorized Signature</div>
-                            </div>
+                        {/* Signature Area */}
+                        <div className="signature-area">
+                            <div className="signature-box">Customer Signature</div>
+                            <div className="signature-box">Authorized Signature</div>
                         </div>
                     </div>
                 </div>

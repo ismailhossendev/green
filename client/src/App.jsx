@@ -23,6 +23,8 @@ import Attendance from './features/hrm/Attendance';
 import ReplacementList from './features/replacement/ReplacementList';
 import Reports from './features/reports/Reports';
 import StockSummary from './features/reports/StockSummary';
+import CompanyLedger from './features/reports/CompanyLedger';
+import CompanySummary from './features/reports/CompanySummary';
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -156,6 +158,8 @@ function App() {
                 <Route path="replacement" element={<ReplacementList />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="stock-summary" element={<StockSummary />} />
+                <Route path="company-summary" element={<CompanySummary />} />
+                <Route path="reports/company-ledger" element={<CompanyLedger />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -58,8 +58,8 @@ const LedgerView = () => {
             runningDues = entry.debit - entry.credit;
             rows.push({
                 sl: '', date: '', invoiceNo: '', type: 'Opening Balance',
-                totalQty: '', amount: '', payment: '', replaceAdjust: '',
-                returnAdjust: '', rebateAdjust: '', dues: runningDues, remarks: ''
+                totalQty: '', amount: '', payment: '',
+                adjustment: '', dues: runningDues, remarks: ''
             });
             return;
         }
@@ -73,8 +73,7 @@ const LedgerView = () => {
             rows.push({
                 sl, date, invoiceNo: entry.referenceNo || '', type: 'Sales',
                 totalQty: entry.totalQty || '', amount: entry.debit, payment: '',
-                replaceAdjust: '', returnAdjust: '', rebateAdjust: '',
-                dues: runningDues, remarks: ''
+                adjustment: '', dues: runningDues, remarks: entry.description || 'Sales'
             });
 
             // If there was a payment at time of sale, add separate Payment row
@@ -82,52 +81,47 @@ const LedgerView = () => {
                 sl++;
                 runningDues -= entry.credit;
                 rows.push({
-                    sl, date: '', invoiceNo: '', type: 'Payment',
+                    sl, date: '', invoiceNo: '', type: 'Pay',
                     totalQty: '', amount: '', payment: entry.credit,
-                    replaceAdjust: '', returnAdjust: '', rebateAdjust: '',
-                    dues: runningDues, remarks: ''
+                    adjustment: '', dues: runningDues, remarks: entry.description || 'Pay'
                 });
             }
         } else if (entry.type === 'Payment') {
             runningDues -= entry.credit;
             rows.push({
-                sl, date, invoiceNo: '', type: 'Payment',
+                sl, date, invoiceNo: '', type: 'Pay',
                 totalQty: '', amount: '', payment: entry.credit,
-                replaceAdjust: '', returnAdjust: '', rebateAdjust: '',
-                dues: runningDues, remarks: ''
+                adjustment: '', dues: runningDues, remarks: entry.description || 'Pay'
             });
         } else if (entry.type === 'Replacement') {
             runningDues -= entry.credit;
             rows.push({
-                sl, date, invoiceNo: entry.referenceNo || '', type: 'Replace',
+                sl, date, invoiceNo: entry.referenceNo || '', type: 'RPL',
                 totalQty: '', amount: '', payment: '',
-                replaceAdjust: entry.credit, returnAdjust: '', rebateAdjust: '',
-                dues: runningDues, remarks: ''
+                adjustment: entry.credit, dues: runningDues, 
+                remarks: (entry.description ? entry.description + ' ' : '') + `(Repl Qty: ${entry.totalQty || 0})`
             });
         } else if (entry.type === 'Return') {
             runningDues -= entry.credit;
             rows.push({
-                sl, date, invoiceNo: entry.referenceNo || '', type: 'Return',
+                sl, date, invoiceNo: entry.referenceNo || '', type: 'RTN',
                 totalQty: '', amount: '', payment: '',
-                replaceAdjust: '', returnAdjust: entry.credit, rebateAdjust: '',
-                dues: runningDues, remarks: ''
+                adjustment: entry.credit, dues: runningDues, remarks: entry.description || 'RTN'
             });
         } else if (entry.type === 'Adjustment') {
             if (entry.credit > 0) {
                 runningDues -= entry.credit;
                 rows.push({
-                    sl, date, invoiceNo: '', type: 'Rebate',
+                    sl, date, invoiceNo: '', type: 'REB',
                     totalQty: '', amount: '', payment: '',
-                    replaceAdjust: '', returnAdjust: '', rebateAdjust: entry.credit,
-                    dues: runningDues, remarks: ''
+                    adjustment: entry.credit, dues: runningDues, remarks: entry.description || 'REB'
                 });
             } else {
                 runningDues += entry.debit;
                 rows.push({
-                    sl, date, invoiceNo: '', type: 'Adjustment',
+                    sl, date, invoiceNo: '', type: 'ADJ',
                     totalQty: '', amount: entry.debit, payment: '',
-                    replaceAdjust: '', returnAdjust: '', rebateAdjust: '',
-                    dues: runningDues, remarks: ''
+                    adjustment: '', dues: runningDues, remarks: entry.description || 'ADJ'
                 });
             }
         }
@@ -138,10 +132,28 @@ const LedgerView = () => {
         totalQty: acc.totalQty + (parseInt(r.totalQty) || 0),
         amount: acc.amount + (r.amount || 0),
         payment: acc.payment + (r.payment || 0),
-        replaceAdjust: acc.replaceAdjust + (r.replaceAdjust || 0),
-        returnAdjust: acc.returnAdjust + (r.returnAdjust || 0),
-        rebateAdjust: acc.rebateAdjust + (r.rebateAdjust || 0),
-    }), { totalQty: 0, amount: 0, payment: 0, replaceAdjust: 0, returnAdjust: 0, rebateAdjust: 0 });
+        adjustment: acc.adjustment + (parseFloat(r.adjustment) || 0)
+    }), { totalQty: 0, amount: 0, payment: 0, adjustment: 0 });
+
+    // Number to words converter
+    const numberToWords = (num) => {
+        if (num === 0) return 'Zero Taka Only';
+        const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+            'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        const convert = (n) => {
+            if (n < 20) return ones[n];
+            if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+            if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + convert(n % 100) : '');
+            if (n < 100000) return convert(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 ? ' ' + convert(n % 1000) : '');
+            if (n < 10000000) return convert(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + convert(n % 100000) : '');
+            return convert(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 ? ' ' + convert(n % 10000000) : '');
+        };
+
+        const rounded = Math.abs(Math.round(num));
+        return convert(rounded) + ' Taka Only';
+    };
 
     // Duration text
     const duration = entries.length > 0
@@ -155,37 +167,36 @@ const LedgerView = () => {
         const dealerName = customerInfo.companyName || customerInfo.name;
         const rowsHTML = rows.map(r => {
             if (r.type === 'Opening Balance') {
-                return '<tr><td></td><td colspan="2" style="font-weight:600;font-style:italic;padding:6px 8px;border:1px solid #bbb">Opening Balance</td><td colspan="8" style="border:1px solid #bbb"></td><td style="text-align:right;font-weight:600;border:1px solid #bbb;padding:4px 8px">' + formatCurrency(r.dues) + '</td><td style="border:1px solid #bbb"></td></tr>';
+                return '<tr><td></td><td colspan="2" style="font-weight:600;font-style:italic;padding:3px 6px;border:1px solid #000;color:#000 !important">Opening Balance</td><td colspan="6" style="border:1px solid #000"></td><td style="text-align:right;font-weight:600;border:1px solid #000;padding:3px 6px;color:#000 !important">' + formatCurrency(r.dues) + '</td><td style="border:1px solid #000"></td></tr>';
             }
             return '<tr>' +
-                '<td style="text-align:center;border:1px solid #bbb;padding:4px 6px">' + r.sl + '</td>' +
-                '<td style="border:1px solid #bbb;padding:4px 8px">' + r.date + '</td>' +
-                '<td style="text-align:center;border:1px solid #bbb;padding:4px 6px">' + r.invoiceNo + '</td>' +
-                '<td style="border:1px solid #bbb;padding:4px 8px;font-weight:500">' + r.type + '</td>' +
-                '<td style="text-align:center;border:1px solid #bbb;padding:4px 6px">' + (r.totalQty || '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #bbb;padding:4px 8px">' + (r.amount ? formatCurrency(r.amount) : '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #bbb;padding:4px 8px;color:#10B981">' + (r.payment ? formatCurrency(r.payment) : '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #bbb;padding:4px 8px">' + (r.replaceAdjust ? formatCurrency(r.replaceAdjust) : '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #bbb;padding:4px 8px">' + (r.returnAdjust ? formatCurrency(r.returnAdjust) : '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #bbb;padding:4px 8px">' + (r.rebateAdjust ? formatCurrency(r.rebateAdjust) : '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #bbb;padding:4px 8px;font-weight:600">' + formatCurrency(r.dues) + '</td>' +
-                '<td style="border:1px solid #bbb;padding:4px 6px"></td>' +
+                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + r.sl + '</td>' +
+                '<td style="border:1px solid #000;padding:2px 4px;color:#000 !important">' + r.date + '</td>' +
+                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + r.invoiceNo + '</td>' +
+                '<td style="border:1px solid #000;padding:2px 4px;font-weight:500;color:#000 !important">' + r.type + '</td>' +
+                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + (r.totalQty || '') + '</td>' +
+                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.amount ? formatCurrency(r.amount) : '') + '</td>' +
+                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.payment ? formatCurrency(r.payment) : '') + '</td>' +
+                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.adjustment ? formatCurrency(r.adjustment) : '') + '</td>' +
+                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;font-weight:600;color:#000 !important">' + formatCurrency(r.dues) + '</td>' +
+                '<td style="border:1px solid #000;padding:2px;font-size:7px">' + (r.remarks || '') + '</td>' +
                 '</tr>';
         }).join('');
 
         return '<html><head><title>Party Ledger - ' + dealerName + '</title>' +
             '<style>' +
-            '* { margin:0;padding:0;box-sizing:border-box; }' +
-            'body { font-family:"Segoe UI",Arial,sans-serif;padding:25px;color:#333;font-size:11px; }' +
-            '@page { size:landscape;margin:10mm; }' +
-            '@media print { body { padding:10px; } }' +
-            'table { width:100%;border-collapse:collapse; }' +
-            'th { background:#00796B;color:white;padding:8px 6px;font-size:10px;border:1px solid #00695C;text-transform:uppercase;letter-spacing:0.3px; }' +
+            '* { margin:0;padding:0;box-sizing:border-box;color:#000 !important; }' +
+            'body { font-family:"Segoe UI",Arial,sans-serif;padding:10px;color:#000 !important;font-size:9px;background:#fff !important;line-height:1.2; }' +
+            '@page { size:portrait;margin:5mm; }' +
+            '@media print { body { padding:0; } table { border:1.5px solid #000; } }' +
+            'table { width:100%;border-collapse:collapse;border:1.5px solid #000; }' +
+            'th { background:#eee !important;color:#000 !important;padding:3px 2px;font-size:8px;border:1px solid #000;text-transform:capitalize; }' +
+            'td { border:1px solid #000;padding:2px 3px; }' +
             '</style></head><body>' +
 
-            '<div style="text-align:center;margin-bottom:8px">' +
-            '<h1 style="font-size:18px;font-weight:700;color:#00796B;letter-spacing:2px;text-transform:uppercase">' + currentBrand + ' Communication</h1>' +
-            '<h2 style="font-size:14px;margin-top:3px;font-weight:600">Party Ledger</h2>' +
+            '<div style="text-align:center;margin-bottom:10px;color:#000 !important">' +
+            '<h1 style="font-size:14px;font-weight:700;color:#000 !important;text-transform:uppercase;margin:0">' + currentBrand + ' Communication</h1>' +
+            '<h2 style="font-size:10px;margin-top:2px;font-weight:600;color:#000 !important">Party Ledger</h2>' +
             '</div>' +
 
             '<div style="margin-bottom:8px;font-size:11px;line-height:1.7">' +
@@ -200,37 +211,37 @@ const LedgerView = () => {
 
             '<table>' +
             '<thead><tr>' +
-            '<th style="width:35px">SL</th>' +
-            '<th style="width:70px">Date</th>' +
-            '<th style="width:65px">Invoice No</th>' +
-            '<th style="width:65px">Type</th>' +
-            '<th style="width:55px">Total Qty</th>' +
-            '<th style="width:80px;text-align:right">Amount</th>' +
-            '<th style="width:80px;text-align:right">Payment</th>' +
-            '<th style="width:75px;text-align:right">Replace Adjust</th>' +
-            '<th style="width:70px;text-align:right">Return Adjust</th>' +
-            '<th style="width:70px;text-align:right">Rebate Adjust</th>' +
+            '<th style="width:30px">SL</th>' +
+            '<th style="width:65px">Date</th>' +
+            '<th style="width:90px">Invoice</th>' +
+            '<th style="width:40px">Type</th>' +
+            '<th style="width:40px">Qty</th>' +
+            '<th style="width:70px;text-align:right">Sales</th>' +
+            '<th style="width:70px;text-align:right">Pay</th>' +
+            '<th style="width:70px;text-align:right">Return/Adj</th>' +
             '<th style="width:80px;text-align:right">Dues</th>' +
-            '<th style="width:70px">Remarks</th>' +
+            '<th style="width:65px">Remarks</th>' +
             '</tr></thead>' +
             '<tbody>' + rowsHTML +
 
-            '<tr style="font-weight:700;background:#E0F2F1">' +
-            '<td colspan="4" style="text-align:right;padding:8px;border:1px solid #bbb;font-size:12px">Total</td>' +
-            '<td style="text-align:center;border:1px solid #bbb;padding:6px">' + totals.totalQty + '</td>' +
-            '<td style="text-align:right;border:1px solid #bbb;padding:6px 8px">' + formatCurrency(totals.amount) + '</td>' +
-            '<td style="text-align:right;border:1px solid #bbb;padding:6px 8px;color:#10B981">' + formatCurrency(totals.payment) + '</td>' +
-            '<td style="text-align:right;border:1px solid #bbb;padding:6px 8px">' + (totals.replaceAdjust ? formatCurrency(totals.replaceAdjust) : '0') + '</td>' +
-            '<td style="text-align:right;border:1px solid #bbb;padding:6px 8px">' + (totals.returnAdjust ? formatCurrency(totals.returnAdjust) : '0') + '</td>' +
-            '<td style="text-align:right;border:1px solid #bbb;padding:6px 8px">' + (totals.rebateAdjust ? formatCurrency(totals.rebateAdjust) : '') + '</td>' +
-            '<td style="text-align:right;border:1px solid #bbb;padding:6px 8px;font-size:12px;color:#00796B">' + formatCurrency(closingBalance) + '</td>' +
-            '<td style="border:1px solid #bbb"></td>' +
+            '<tr style="font-weight:700;background:#eee !important;color:#000 !important">' +
+            '<td colspan="4" style="text-align:right;padding:4px;border:1px solid #000;font-size:9px;color:#000 !important">Total</td>' +
+            '<td style="text-align:center;border:1px solid #000;padding:4px;color:#000 !important">' + totals.totalQty + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px;color:#000 !important">' + formatCurrency(totals.amount) + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px;color:#000 !important">' + formatCurrency(totals.payment) + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px;color:#000 !important">' + formatCurrency(totals.adjustment) + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px;font-size:10px;color:#000 !important">' + formatCurrency(closingBalance) + '</td>' +
+            '<td style="border:1px solid #000"></td>' +
             '</tr>' +
             '</tbody></table>' +
 
-            '<div style="display:flex;justify-content:space-between;margin-top:60px;padding:0 40px">' +
-            '<div style="text-align:center;border-top:1px solid #333;padding-top:5px;width:180px;font-size:11px;font-weight:600">Dealer Signature</div>' +
-            '<div style="text-align:center;border-top:1px solid #333;padding-top:5px;width:180px;font-size:11px;font-weight:600">Authorized Signature</div>' +
+            '<div style="margin-top:10px;padding:8px;border:1px solid #bbb;background:#f9f9f9 !important">' +
+            '<b style="color:#000 !important">Closing Dues in Words: </b> <i style="color:#000 !important">' + numberToWords(closingBalance) + '</i>' +
+            '</div>' +
+
+            '<div style="display:flex;justify-content:space-between;margin-top:40px;padding:0 30px">' +
+            '<div style="text-align:center;border-top:1px solid #333;padding-top:4px;width:150px;font-size:9px;font-weight:600;color:#000 !important">Dealer Signature</div>' +
+            '<div style="text-align:center;border-top:1px solid #333;padding-top:4px;width:150px;font-size:9px;font-weight:600;color:#000 !important">Authorized Signature</div>' +
             '</div>' +
 
             '</body></html>';
@@ -302,10 +313,10 @@ const LedgerView = () => {
 
             {/* Dealer Info Card */}
             {customerInfo && (
-                <div className="card" style={{ background: 'linear-gradient(135deg, #E0F2F1, #B2DFDB)', border: '1px solid #80CBC4' }}>
+                <div className="card" style={{ background: '#f8fafc', border: '1px solid #ddd' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div style={{ lineHeight: 1.7, fontSize: '0.875rem' }}>
-                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#00695C' }}>
+                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#000' }}>
                                 {customerInfo.companyName || customerInfo.name}
                             </div>
                             {customerInfo.companyName && (
@@ -317,7 +328,7 @@ const LedgerView = () => {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <span style={{ fontSize: '0.75rem', color: '#777', textTransform: 'uppercase', letterSpacing: '1px' }}>Closing Dues</span>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#00796B' }}>
+                            <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#000' }}>
                                 {formatCurrency(closingBalance)}
                             </p>
                         </div>
@@ -333,28 +344,26 @@ const LedgerView = () => {
                             <tr>
                                 <th style={{ width: '40px', textAlign: 'center' }}>SL</th>
                                 <th style={{ width: '80px' }}>Date</th>
-                                <th style={{ width: '70px', textAlign: 'center' }}>Invoice No</th>
-                                <th style={{ width: '70px' }}>Type</th>
-                                <th style={{ width: '60px', textAlign: 'center' }}>Total Qty</th>
-                                <th style={{ width: '90px', textAlign: 'right' }}>Amount</th>
-                                <th style={{ width: '90px', textAlign: 'right' }}>Payment</th>
-                                <th style={{ width: '80px', textAlign: 'right' }}>Replace Adjust</th>
-                                <th style={{ width: '80px', textAlign: 'right' }}>Return Adjust</th>
-                                <th style={{ width: '80px', textAlign: 'right' }}>Rebate Adjust</th>
-                                <th style={{ width: '90px', textAlign: 'right' }}>Dues</th>
-                                <th style={{ width: '80px' }}>Remarks</th>
+                                <th style={{ width: '100px', textAlign: 'center' }}>Invoice</th>
+                                <th style={{ width: '60px' }}>Type</th>
+                                <th style={{ width: '60px', textAlign: 'center' }}>Qty</th>
+                                <th style={{ width: '90px', textAlign: 'right' }}>Sales</th>
+                                <th style={{ width: '90px', textAlign: 'right' }}>Pay</th>
+                                <th style={{ width: '90px', textAlign: 'right' }}>Return/Adj</th>
+                                <th style={{ width: '100px', textAlign: 'right' }}>Dues</th>
+                                <th style={{ width: '100px' }}>Remarks</th>
                             </tr>
                         </thead>
                         <tbody>
                             {!selectedCustomer ? (
                                 <tr>
-                                    <td colSpan="12" className="text-center text-muted" style={{ padding: '3rem' }}>
+                                    <td colSpan="10" className="text-center text-muted" style={{ padding: '3rem' }}>
                                         Please select a dealer to view party ledger
                                     </td>
                                 </tr>
                             ) : isLoading ? (
                                 <tr>
-                                    <td colSpan="12" className="text-center" style={{ padding: '3rem' }}>
+                                    <td colSpan="10" className="text-center" style={{ padding: '3rem' }}>
                                         <div className="spinner"></div>
                                     </td>
                                 </tr>
@@ -366,7 +375,7 @@ const LedgerView = () => {
                                                 <tr key={index} style={{ background: '#F5F5F5' }}>
                                                     <td></td>
                                                     <td colSpan="2" style={{ fontWeight: 600, fontStyle: 'italic' }}>Opening Balance</td>
-                                                    <td colSpan="7"></td>
+                                                    <td colSpan="6"></td>
                                                     <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(row.dues)}</td>
                                                     <td></td>
                                                 </tr>
@@ -382,43 +391,39 @@ const LedgerView = () => {
                                                         fontSize: '10px',
                                                         padding: '2px 8px',
                                                         borderRadius: '10px',
-                                                        background: row.type === 'Sales' ? '#E3F2FD' : row.type === 'Payment' ? '#E8F5E9' : '#FFF3E0',
-                                                        color: row.type === 'Sales' ? '#1565C0' : row.type === 'Payment' ? '#2E7D32' : '#E65100'
+                                                        background: '#f0f0f0',
+                                                        color: '#000'
                                                     }}>
                                                         {row.type}
                                                     </span>
                                                 </td>
-                                                <td style={{ textAlign: 'center' }}>{row.totalQty}</td>
+                                                <td style={{ textAlign: 'center' }}>{row.totalQty || ''}</td>
                                                 <td style={{ textAlign: 'right', color: row.amount ? '#333' : '#ccc' }}>
                                                     {row.amount ? formatCurrency(row.amount) : ''}
                                                 </td>
-                                                <td style={{ textAlign: 'right', color: row.payment ? '#10B981' : '#ccc', fontWeight: row.payment ? 600 : 400 }}>
+                                                <td style={{ textAlign: 'right', color: row.payment ? '#000' : '#ccc', fontWeight: row.payment ? 600 : 400 }}>
                                                     {row.payment ? formatCurrency(row.payment) : ''}
                                                 </td>
-                                                <td style={{ textAlign: 'right' }}>{row.replaceAdjust ? formatCurrency(row.replaceAdjust) : ''}</td>
-                                                <td style={{ textAlign: 'right' }}>{row.returnAdjust ? formatCurrency(row.returnAdjust) : ''}</td>
-                                                <td style={{ textAlign: 'right' }}>{row.rebateAdjust ? formatCurrency(row.rebateAdjust) : ''}</td>
+                                                <td style={{ textAlign: 'right' }}>{row.adjustment ? formatCurrency(row.adjustment) : ''}</td>
                                                 <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(row.dues)}</td>
                                                 <td>{row.remarks}</td>
                                             </tr>
                                         );
                                     })}
                                     {/* Totals Row */}
-                                    <tr style={{ background: '#E0F2F1', fontWeight: 700, fontSize: '12px' }}>
+                                    <tr style={{ background: '#f5f5f5', fontWeight: 700, fontSize: '11px' }}>
                                         <td colSpan="4" style={{ textAlign: 'right', padding: '10px 12px' }}>Total</td>
                                         <td style={{ textAlign: 'center' }}>{totals.totalQty || ''}</td>
                                         <td style={{ textAlign: 'right' }}>{formatCurrency(totals.amount)}</td>
-                                        <td style={{ textAlign: 'right', color: '#10B981' }}>{formatCurrency(totals.payment)}</td>
-                                        <td style={{ textAlign: 'right' }}>{totals.replaceAdjust ? formatCurrency(totals.replaceAdjust) : '0'}</td>
-                                        <td style={{ textAlign: 'right' }}>{totals.returnAdjust ? formatCurrency(totals.returnAdjust) : '0'}</td>
-                                        <td style={{ textAlign: 'right' }}>{totals.rebateAdjust ? formatCurrency(totals.rebateAdjust) : ''}</td>
-                                        <td style={{ textAlign: 'right', color: '#00796B', fontSize: '13px' }}>{formatCurrency(closingBalance)}</td>
+                                        <td style={{ textAlign: 'right', color: '#000' }}>{formatCurrency(totals.payment)}</td>
+                                        <td style={{ textAlign: 'right' }}>{formatCurrency(totals.adjustment)}</td>
+                                        <td style={{ textAlign: 'right', color: '#000', fontSize: '12px' }}>{formatCurrency(closingBalance)}</td>
                                         <td></td>
                                     </tr>
                                 </>
                             ) : (
                                 <tr>
-                                    <td colSpan="12" className="text-center text-muted" style={{ padding: '3rem' }}>
+                                    <td colSpan="10" className="text-center text-muted" style={{ padding: '3rem' }}>
                                         No ledger entries found
                                     </td>
                                 </tr>
@@ -427,6 +432,14 @@ const LedgerView = () => {
                     </table>
                 </div>
             </div>
+            {/* Amount in Words Card */}
+            {selectedCustomer && entries.length > 0 && (
+                <div className="card" style={{ background: '#f8fafc', color: '#000' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                        Closing Dues in Words: <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{numberToWords(closingBalance)}</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

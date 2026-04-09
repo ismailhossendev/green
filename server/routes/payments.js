@@ -195,8 +195,8 @@ router.post('/dealer', protect, canAccessModule('sales'), async (req, res) => {
         });
 
         // Update customer
-        customer.totalPayment += amount;
-        customer.totalDues = newBalance;
+        customer.totalPayment = (customer.totalPayment || 0) + amount;
+        customer.totalDues = newBalance || 0;
         await customer.save();
 
         res.status(201).json(payment);

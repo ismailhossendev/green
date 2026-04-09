@@ -48,7 +48,7 @@ const Header = ({ onMenuToggle }) => {
 
                 {/* User Info */}
                 <div className="header-user">
-                    <span className="header-user-name">{user?.name || 'User'}</span>
+                    <span className="header-user-name" style={{ display: window.innerWidth <= 640 ? 'none' : 'block' }}>{user?.name || 'User'}</span>
                     <div className="header-user-avatar">
                         {user?.name?.charAt(0) || 'U'}
                     </div>

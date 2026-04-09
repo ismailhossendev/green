@@ -7,6 +7,7 @@ const Payment = require('../models/Payment');
 const Customer = require('../models/Customer');
 const Supplier = require('../models/Supplier');
 const Product = require('../models/Product');
+const Investment = require('../models/Investment');
 const { protect } = require('../middleware/auth');
 const { authorize, canViewSensitive } = require('../middleware/rbac');
 
@@ -458,15 +459,45 @@ router.get('/assets', protect, canViewSensitive, async (req, res) => {
                 }
             }
         ]);
+        
+        // Investment assets (Fixed Assets, Cash, etc.)
+        const investments = await Investment.find({}).sort({ date: -1 });
+        
+        const investmentSummary = await Investment.aggregate([
+            {
+                $group: {
+                    _id: '$type',
+                    initialAmount: { $sum: '$amount' },
+                    currentValue: { $sum: '$currentValue' },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
 
         res.json({
-            assets: {
+            inventory: {
                 productValue: productValue[0]?.totalValue || 0,
                 packetValue: packetValue[0]?.totalValue || 0,
-                marketDues: marketDues[0]?.totalDues || 0
             },
-            liabilities: {
+            market: {
+                customerDues: marketDues[0]?.totalDues || 0,
                 supplierDues: supplierDues[0]?.totalDues || 0
+            },
+            investments: {
+                details: investments,
+                summary: investmentSummary
+            },
+            summary: {
+                totalAssets: (productValue[0]?.totalValue || 0) + 
+                             (packetValue[0]?.totalValue || 0) + 
+                             (marketDues[0]?.totalDues || 0) + 
+                             (investmentSummary.reduce((acc, i) => acc + i.currentValue, 0)),
+                totalLiabilities: (supplierDues[0]?.totalDues || 0),
+                netWorth: ((productValue[0]?.totalValue || 0) + 
+                          (packetValue[0]?.totalValue || 0) + 
+                          (marketDues[0]?.totalDues || 0) + 
+                          (investmentSummary.reduce((acc, i) => acc + i.currentValue, 0))) - 
+                         (supplierDues[0]?.totalDues || 0)
             }
         });
     } catch (error) {
@@ -649,6 +680,351 @@ router.get('/stock-summary', protect, async (req, res) => {
             grouped,
             typeTotals,
             grandTotals,
+            month: parseInt(month),
+            year: parseInt(year)
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   GET /api/reports/party-summary
+// @desc    Get date-ranged summary for all customers or suppliers
+// @access  Private
+router.get('/party-summary', protect, async (req, res) => {
+    try {
+        const { type, startDate, endDate, brand, customerType } = req.query;
+        const start = startDate ? new Date(startDate) : new Date(0);
+        const end = endDate ? new Date(endDate) : new Date();
+        
+        if (type === 'customer' || type === 'Dealer') {
+            const Ledger = require('../models/Ledger');
+            const Customer = require('../models/Customer');
+
+            // 1. Get all customers
+            let custQuery = { isActive: true };
+            if (brand && brand !== 'Both') custQuery.brand = { $in: [brand, 'Both'] };
+            if (customerType) custQuery.type = customerType;
+            
+            const customers = await Customer.find(custQuery).select('name district companyName totalDues type');
+
+            // 2. Aggregate Ledger Activity
+            const activity = await Ledger.aggregate([
+                { $match: { 
+                    brand: brand === 'Both' ? { $exists: true } : brand,
+                    date: { $lte: end }
+                }},
+                { $group: {
+                    _id: '$customer',
+                    opening: { $sum: { $cond: [{ $lt: ['$date', start] }, { $subtract: ['$debit', '$credit'] }, 0] } },
+                    sales: { $sum: { $cond: [{ $and: [{ $gte: ['$date', start] }, { $eq: ['$type', 'Invoice'] }] }, '$debit', 0] } },
+                    payments: { $sum: { $cond: [{ $and: [{ $gte: ['$date', start] }, { $eq: ['$type', 'Payment'] }] }, '$credit', 0] } },
+                    returns: { $sum: { $cond: [{ $and: [{ $gte: ['$date', start] }, { $in: ['$type', ['Return', 'Replacement', 'Adjustment']] }] }, { $subtract: ['$credit', '$debit'] }, 0] } }
+                }}
+            ]);
+
+            const activityMap = {};
+            activity.forEach(a => { activityMap[a._id.toString()] = a; });
+
+            const summary = customers.map(c => {
+                const act = activityMap[c._id.toString()] || { opening: 0, sales: 0, payments: 0, returns: 0 };
+                // If no date range provided, opening might be 0 and lifetime totals are used elsewhere.
+                // But with range, we show the calculated opening.
+                return {
+                    _id: c._id,
+                    name: c.companyName || c.name,
+                    district: c.district,
+                    opening: act.opening,
+                    sales: act.sales,
+                    payments: act.payments,
+                    returns: act.returns,
+                    balance: act.opening + act.sales - act.payments - act.returns
+                };
+            }).filter(s => s.sales !== 0 || s.payments !== 0 || s.returns !== 0 || s.balance !== 0);
+
+            res.json(summary);
+
+        } else if (type === 'supplier') {
+            const Supplier = require('../models/Supplier');
+            const Purchase = require('../models/Purchase');
+            const Payment = require('../models/Payment');
+
+            const suppliers = await Supplier.find({ isActive: true }).select('name address totalDues');
+
+            // Aggregate Purchases in range
+            const purchases = await Purchase.aggregate([
+                { $match: { date: { $lte: end }, status: 'Received' } },
+                { $group: {
+                    _id: '$supplier',
+                    opening: { $sum: { $cond: [{ $lt: ['$date', start] }, '$dues', 0] } }, // This isn't quite right for opening dues
+                    inRange: { $sum: { $cond: [{ $gte: ['$date', start] }, '$totalAmount', 0] } }
+                }}
+            ]);
+
+            // Aggregate Payments in range
+            const payments = await Payment.aggregate([
+                { $match: { 
+                    date: { $lte: end }, 
+                    referenceModel: 'Supplier' 
+                }},
+                { $group: {
+                    _id: '$referenceId',
+                    paid: { $sum: { $cond: [{ $gte: ['$date', start] }, '$amount', 0] } }
+                }}
+            ]);
+
+            // For suppliers, since we don't have a ledger, "Opening" is harder to calculate without a full history.
+            // We'll simplify: Show Lifetime totals if no dates, or calculate activity if dates provided.
+            const purchaseMap = {};
+            purchases.forEach(p => { purchaseMap[p._id.toString()] = p; });
+            const paymentMap = {};
+            payments.forEach(p => { paymentMap[p._id.toString()] = p; });
+
+            const summary = suppliers.map(s => {
+                const p = purchaseMap[s._id.toString()] || { inRange: 0 };
+                const pay = paymentMap[s._id.toString()] || { paid: 0 };
+                
+                return {
+                    _id: s._id,
+                    name: s.name,
+                    address: s.address,
+                    opening: 0, // Placeholder
+                    purchases: p.inRange,
+                    payments: pay.paid,
+                    balance: s.totalDues // Show current total dues for now
+                };
+            });
+
+            res.json(summary);
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   GET /api/reports/today-stats
+// @desc    Get Today's summary stats (Revenue, Receive, Due, Profit)
+// @access  Private
+router.get('/today-stats', protect, async (req, res) => {
+    try {
+        const { brand, localDate } = req.query;
+        
+        // Use provided local date or server date
+        const now = localDate ? new Date(localDate) : new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+        // We broaden the match slightly (last 24-30 hours if timezone is an issue)
+        // but for high accuracy we stick to the 00:00-23:59 of the target day.
+        let matchQuery = { 
+            status: 'Confirmed', 
+            date: { $gte: startOfToday, $lte: endOfToday } 
+        };
+        if (brand) matchQuery.brand = brand;
+
+        const invoices = await Invoice.find(matchQuery)
+            .populate({
+                path: 'items.productId',
+                select: 'purchasePrice linkedPacket linkedPacketQty',
+                populate: { path: 'linkedPacket', select: 'purchasePrice' }
+            });
+
+        let todayTotalSale = 0;
+        let todayReceive = 0;
+        let todayDue = 0;
+        let todayProfit = 0;
+
+        invoices.forEach(inv => {
+            todayTotalSale += inv.grandTotal || 0;
+            todayReceive += inv.paidAmount || 0;
+            todayDue += inv.dues || 0;
+
+            inv.items.forEach(item => {
+                const product = item.productId;
+                const itemTotal = item.total || 0;
+                const qty = item.qty || 0;
+
+                if (product) {
+                    const productCost = product.purchasePrice || 0;
+                    const packetCost = product.linkedPacket?.purchasePrice || 0;
+                    const packetQty = product.linkedPacketQty || 1;
+                    
+                    const totalUnitCost = productCost + (packetCost * packetQty);
+                    todayProfit += itemTotal - (qty * totalUnitCost);
+                } else {
+                    // Fallback for items without valid product link (shouldn't happen)
+                    // At least count the full total as profit if cost is unknown? 
+                    // No, better to count 0 profit for unknown items.
+                }
+            });
+        });
+
+        res.json({
+            todayTotalSale,
+            todayReceive,
+            todayDue,
+            todayProfit,
+            count: invoices.length
+        });
+    } catch (error) {
+        console.error('Today Stats Error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   GET /api/reports/company-summary
+// @desc    Get Detailed Company Summary Report (Expert Level)
+// @access  Private
+router.get('/company-summary', protect, async (req, res) => {
+    try {
+        const { month, year, brand } = req.query;
+
+        if (!month || !year) {
+            return res.status(400).json({ message: 'Month and year are required' });
+        }
+
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+        // Get all products for the brand
+        let productQuery = { isActive: true };
+        if (brand) productQuery.brand = brand;
+
+        const products = await Product.find(productQuery)
+            .populate('linkedPacket', 'purchasePrice modelName')
+            .sort({ type: 1, modelName: 1 });
+
+        // Get purchases (receive) within the month
+        let purchaseQuery = { status: 'Received', date: { $gte: startDate, $lte: endDate } };
+        if (brand) purchaseQuery.brand = brand;
+
+        const purchaseItems = await Purchase.aggregate([
+            { $match: purchaseQuery },
+            { $unwind: '$items' },
+            {
+                $group: {
+                    _id: '$items.productId',
+                    receiveQty: { $sum: '$items.qty' },
+                    receiveValue: { $sum: '$items.total' }
+                }
+            }
+        ]);
+
+        // Get sales within the month
+        let salesQuery = { status: 'Confirmed', date: { $gte: startDate, $lte: endDate } };
+        if (brand) salesQuery.brand = brand;
+
+        const salesItems = await Invoice.aggregate([
+            { $match: salesQuery },
+            { $unwind: '$items' },
+            {
+                $group: {
+                    _id: '$items.productId',
+                    salesQty: { $sum: '$items.qty' },
+                    salesValue: { $sum: '$items.total' }
+                }
+            }
+        ]);
+
+        // Get returns within the month
+        const Replacement = require('../models/Replacement');
+        let replacementQuery = { date: { $gte: startDate, $lte: endDate } };
+        if (brand) replacementQuery.brand = brand;
+
+        const returnItems = await Replacement.aggregate([
+            { $match: replacementQuery },
+            { $unwind: '$items' },
+            {
+                $group: {
+                    _id: '$items.product',
+                    returnQty: { $sum: { $add: ['$items.goodQty', '$items.badQty', '$items.damageQty', '$items.repairQty'] } }
+                }
+            }
+        ]);
+
+        // Build lookup maps
+        const purchaseMap = {};
+        purchaseItems.forEach(p => { purchaseMap[p._id.toString()] = p; });
+
+        const salesMap = {};
+        salesItems.forEach(s => { salesMap[s._id.toString()] = s; });
+
+        const returnMap = {};
+        returnItems.forEach(r => { returnMap[r._id.toString()] = r; });
+
+        // Build summary data
+        const summary = [];
+        let serial = 1;
+
+        for (const product of products) {
+            const pid = product._id.toString();
+            const purchase = purchaseMap[pid] || { receiveQty: 0, receiveValue: 0 };
+            const sale = salesMap[pid] || { salesQty: 0, salesValue: 0 };
+            const returnData = returnMap[pid] || { returnQty: 0 };
+
+            // Stock at end of month (current) - actually we need closing as of endDate
+            // For now, let's use the current stock status as closing if no future transactions exist
+            const currentStock = product.stock.goodQty;
+            
+            // Reverse calculate Opening
+            // Opening = Current - (Purchases since Start) + (Sales since Start) - (Returns since Start)
+            // But wait, if we are in the middle of a month, we want opening as of day 1.
+            const openingQty = currentStock + sale.salesQty - purchase.receiveQty + returnData.returnQty;
+            const openingValue = openingQty * product.purchasePrice;
+            
+            const closingQty = openingQty + purchase.receiveQty - sale.salesQty - returnData.returnQty;
+            const closingValue = closingQty * product.purchasePrice;
+            
+            // Financial Metrics
+            const packetBuyPrice = product.linkedPacket?.purchasePrice || 0;
+            const productBuyPrice = product.purchasePrice || 0;
+            const salesPrice = product.salesPrice || 0;
+            const gap = salesPrice - productBuyPrice; // Estimate
+            
+            // Profit calculation: Revenue - Cost (Product + Packet)
+            const totalUnitCost = productBuyPrice + (packetBuyPrice * (product.linkedPacketQty || 1));
+            const estimatedProfit = sale.salesValue - (sale.salesQty * totalUnitCost);
+
+            // Filter out items with no activity and no stock
+            if (openingQty > 0 || purchase.receiveQty > 0 || sale.salesQty > 0 || returnData.returnQty > 0 || currentStock > 0) {
+                summary.push({
+                    sl: serial++,
+                    type: product.type,
+                    model: product.modelName,
+                    packetBuyPrice,
+                    productBuyPrice,
+                    salesPrice,
+                    gap,
+                    openingQty,
+                    openingValue,
+                    receiveQty: purchase.receiveQty,
+                    receiveValue: purchase.receiveValue,
+                    // Note: Excel has Packet Receive columns too, we filter by type 'Packet' in logic
+                    isPacket: product.type === 'Packet',
+                    salesQty: sale.salesQty,
+                    salesValue: sale.salesValue,
+                    returnQty: returnData.returnQty,
+                    returnValue: returnData.returnQty * productBuyPrice,
+                    closingQty,
+                    closingValue,
+                    profit: estimatedProfit
+                });
+            }
+        }
+
+        // Group by Model Type for the Super Table
+        const grouped = {};
+        summary.forEach(item => {
+            const cat = item.type;
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(item);
+        });
+
+        res.json({
+            summary,
+            grouped,
             month: parseInt(month),
             year: parseInt(year)
         });

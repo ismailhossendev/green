@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useBrand } from '../../App';
 import { replacementAPI, inventoryAPI, customerAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
-import { FiPlus, FiRefreshCw, FiPackage, FiCheckCircle, FiX, FiTool, FiDollarSign, FiTrash2, FiEye, FiTruck, FiActivity } from 'react-icons/fi';
+import { FiPlus, FiRefreshCw, FiPackage, FiCheckCircle, FiX, FiTool, FiDollarSign, FiTrash2, FiEye, FiTruck, FiActivity, FiSearch, FiPrinter } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import './ReplacementList.css';
 
@@ -12,6 +12,8 @@ const ReplacementList = () => {
     const queryClient = useQueryClient();
 
     const [status, setStatus] = useState('');
+    const [search, setSearch] = useState('');
+    const [dealerId, setDealerId] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showStatsModal, setShowStatsModal] = useState(false);
 
@@ -43,8 +45,13 @@ const ReplacementList = () => {
 
     // Fetch replacements
     const { data, isLoading } = useQuery({
-        queryKey: ['replacements', currentBrand, status],
-        queryFn: () => replacementAPI.getReplacements({ brand: currentBrand, status }),
+        queryKey: ['replacements', currentBrand, status, search, dealerId],
+        queryFn: () => replacementAPI.getReplacements({ 
+            brand: currentBrand, 
+            status, 
+            search, 
+            dealerId 
+        }),
     });
 
     const { data: dealersData } = useQuery({
@@ -200,6 +207,108 @@ const ReplacementList = () => {
 
     // --- RENDER HELPERS ---
 
+    const handlePrint = (item) => {
+        const printWindow = window.open('', '_blank');
+        const dateStr = new Date(item.date).toLocaleDateString('en-GB');
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Replacement Receipt - ${item.replacementNo}</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Arial', sans-serif; padding: 10mm; color: #000; font-size: 10px; line-height: 1.2; }
+                    .header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px; }
+                    .brand-name { font-size: 20px; font-weight: 700; text-transform: uppercase; }
+                    .invoice-title { font-size: 22px; font-weight: 700; text-align: right; }
+                    .info-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 15px; }
+                    .section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #000; margin-bottom: 4px; }
+                    .info-val { font-weight: 600; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
+                    th, td { border: 1px solid #000; padding: 4px 6px; font-size: 10px; text-align: left; }
+                    th { background: #f2f2f2; font-weight: 700; text-transform: uppercase; font-size: 8px; }
+                    .text-right { text-align: right; }
+                    .text-center { text-align: center; }
+                    .footer { display: flex; justify-content: space-between; margin-top: 50px; }
+                    .signature-box { border-top: 1px solid #000; width: 150px; text-align: center; padding-top: 5px; font-size: 9px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <div class="brand-name">Green Tel Communication</div>
+                        <div style="font-size: 9px;">Dealer Replacement Receipt</div>
+                    </div>
+                    <div>
+                        <div class="invoice-title">REPLACEMENT</div>
+                        <div class="text-right">No: ${item.replacementNo}<br>Date: ${dateStr}</div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div>
+                        <div class="section-label">Dealer Info</div>
+                        <div class="info-val" style="font-size: 12px;">${item.dealer?.companyName || item.dealer?.name}</div>
+                        <div>Phone: ${item.dealer?.phone}</div>
+                        <div>Address: ${item.dealer?.address || ''}, ${item.dealer?.district || ''}</div>
+                    </div>
+                    <div>
+                        <div class="section-label">Summary</div>
+                        <div style="display: flex; justify-content: space-between;"><span>Status:</span> <span class="info-val">${item.status}</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Total Claimed:</span> <span class="info-val">${item.totalClaimed}</span></div>
+                        ${item.status !== 'Pending' ? `
+                            <div style="display: flex; justify-content: space-between;"><span>Good Accepted:</span> <span class="info-val">${item.totalGood}</span></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Repairable:</span> <span class="info-val">${item.totalRepairable}</span></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Damage/Rejected:</span> <span class="info-val">${item.totalDamage}</span></div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 30px">SL</th>
+                            <th>Product Name</th>
+                            <th style="width: 60px" class="text-center">Claimed</th>
+                            ${item.status !== 'Pending' ? `
+                                <th style="width: 60px" class="text-center">Good</th>
+                                <th style="width: 60px" class="text-center">Repair</th>
+                                <th style="width: 60px" class="text-center">Bad</th>
+                            ` : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${item.items.map((it, idx) => `
+                            <tr>
+                                <td class="text-center">${idx + 1}</td>
+                                <td>${it.product?.modelName || it.productName}</td>
+                                <td class="text-center">${it.claimedQty}</td>
+                                ${item.status !== 'Pending' ? `
+                                    <td class="text-center">${it.goodQty}</td>
+                                    <td class="text-center">${it.repairableQty}</td>
+                                    <td class="text-center">${it.damageQty}</td>
+                                ` : ''}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <div class="footer">
+                    <div class="signature-box">Dealer Signature</div>
+                    <div class="signature-box">Authorized Signature</div>
+                </div>
+
+                <script>
+                    window.onload = () => { window.print(); window.onafterprint = () => window.close(); };
+                </script>
+            </body>
+            </html>
+        `;
+        printWindow.document.write(html);
+        printWindow.document.close();
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'Pending': return 'secondary';
@@ -254,6 +363,38 @@ const ReplacementList = () => {
                     <div>
                         <div className="text-2xl font-bold">{replacements.filter(r => r.status === 'Repaired').length}</div>
                         <div className="text-sm text-gray-500">Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="card mb-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                    <div style={{ position: 'relative' }}>
+                        <FiSearch style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                        <input
+                            type="text"
+                            className="input"
+                            style={{ paddingLeft: '2.5rem' }}
+                            placeholder="Search by name, phone, inv..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <select className="input w-full" value={dealerId} onChange={e => setDealerId(e.target.value)}>
+                            <option value="">All Dealers</option>
+                            {dealers.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <select className="input w-full" value={status} onChange={e => setStatus(e.target.value)}>
+                            <option value="">All Statuses</option>
+                            <option value="Pending">Pending Check</option>
+                            <option value="Checked">Checked</option>
+                            <option value="Sent to Factory">Sent to Factory</option>
+                            <option value="Repaired">Repaired</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -352,6 +493,13 @@ const ReplacementList = () => {
                                                     onClick={() => setViewItem(item)}
                                                 >
                                                     <FiEye />
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-ghost"
+                                                    style={{ background: '#eee', color: '#000' }}
+                                                    onClick={() => handlePrint(item)}
+                                                >
+                                                    <FiPrinter />
                                                 </button>
                                             </div>
                                         </td>

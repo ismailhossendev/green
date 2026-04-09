@@ -41,15 +41,15 @@ const StockSummary = () => {
                     * { margin: 0; padding: 0; box-sizing: border-box; }
                     body { font-family: 'Segoe UI', Arial, sans-serif; padding: 15px; font-size: 11px; }
                     .header { text-align: center; margin-bottom: 15px; }
-                    .header h1 { font-size: 18px; font-weight: 700; color: #00796B; }
-                    .header h2 { font-size: 14px; font-weight: 600; margin-top: 4px; }
-                    .header h3 { font-size: 12px; font-weight: 500; color: #666; margin-top: 2px; }
-                    table { width: 100%; border-collapse: collapse; font-size: 10px; }
-                    th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
-                    th { background: #00796B; color: white; font-weight: 600; font-size: 9px; }
-                    .type-header td { background: #E0F2F1; font-weight: 700; font-size: 11px; text-align: left; color: #00796B; }
-                    .subtotal td { background: #F5F5F5; font-weight: 600; }
-                    .grand-total td { background: #00796B; color: white; font-weight: 700; font-size: 11px; }
+                    .header h1 { font-size: 18px; font-weight: 700; color: #000; }
+                    .header h2 { font-size: 13px; font-weight: 600; margin-top: 4px; }
+                    .header h3 { font-size: 11px; font-weight: 500; color: #333; margin-top: 2px; }
+                    table { width: 100%; border-collapse: collapse; font-size: 9px; }
+                    th, td { border: 1px solid #999; padding: 4px 6px; text-align: center; }
+                    th { background: #f0f0f0; color: #000; font-weight: 600; font-size: 8px; }
+                    .type-header td { background: #fafafa; font-weight: 700; font-size: 10px; text-align: left; color: #000; }
+                    .subtotal td { background: #fff; font-weight: 600; }
+                    .grand-total td { background: #000; color: white; font-weight: 700; font-size: 10px; }
                     .text-left { text-align: left; }
                     .text-right { text-align: right; }
                     @page { size: landscape; margin: 10mm; }
@@ -112,7 +112,7 @@ const StockSummary = () => {
                 ) : (
                     <div ref={printRef}>
                         <div className="header" style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                            <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#00796B' }}>
+                            <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#000' }}>
                                 {currentBrand} Communication
                             </h1>
                             <h2 style={{ fontSize: '14px', fontWeight: 600, marginTop: '4px' }}>
@@ -126,27 +126,27 @@ const StockSummary = () => {
                         <table className="table" style={{ fontSize: '12px', width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr>
-                                    <th rowSpan="2" style={{ width: '40px', background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>SL</th>
-                                    <th rowSpan="2" style={{ width: '70px', background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>Type</th>
-                                    <th rowSpan="2" style={{ background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px', textAlign: 'left' }}>Model</th>
-                                    <th rowSpan="2" style={{ width: '80px', background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>Buy Price</th>
-                                    <th colSpan="2" style={{ background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>Opening</th>
-                                    <th colSpan="2" style={{ background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>Receive</th>
-                                    <th colSpan="2" style={{ background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>Sales</th>
-                                    <th colSpan="2" style={{ background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>Return</th>
-                                    <th colSpan="2" style={{ background: '#00796B', color: 'white', border: '1px solid #00695C', padding: '6px 4px' }}>Closing</th>
+                                    <th rowSpan="2" style={{ width: '40px', background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>SL</th>
+                                    <th rowSpan="2" style={{ width: '70px', background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>Type</th>
+                                    <th rowSpan="2" style={{ background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px', textAlign: 'left' }}>Model</th>
+                                    <th rowSpan="2" style={{ width: '80px', background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>Buy Price</th>
+                                    <th colSpan="2" style={{ background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>Opening</th>
+                                    <th colSpan="2" style={{ background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>Receive</th>
+                                    <th colSpan="2" style={{ background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>Sales</th>
+                                    <th colSpan="2" style={{ background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>Return</th>
+                                    <th colSpan="2" style={{ background: '#f5f5f5', color: '#000', border: '1px solid #ccc', padding: '6px 4px' }}>Closing</th>
                                 </tr>
                                 <tr>
-                                    <th style={{ width: '55px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Qty</th>
-                                    <th style={{ width: '80px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Value</th>
-                                    <th style={{ width: '55px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Qty</th>
-                                    <th style={{ width: '80px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Value</th>
-                                    <th style={{ width: '55px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Qty</th>
-                                    <th style={{ width: '80px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Value</th>
-                                    <th style={{ width: '55px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Qty</th>
-                                    <th style={{ width: '80px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Value</th>
-                                    <th style={{ width: '55px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Qty</th>
-                                    <th style={{ width: '80px', background: '#009688', color: 'white', border: '1px solid #00695C', padding: '4px', fontSize: '10px' }}>Value</th>
+                                    <th style={{ width: '55px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Qty</th>
+                                    <th style={{ width: '80px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Value</th>
+                                    <th style={{ width: '55px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Qty</th>
+                                    <th style={{ width: '80px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Value</th>
+                                    <th style={{ width: '55px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Qty</th>
+                                    <th style={{ width: '80px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Value</th>
+                                    <th style={{ width: '55px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Qty</th>
+                                    <th style={{ width: '80px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Value</th>
+                                    <th style={{ width: '55px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Qty</th>
+                                    <th style={{ width: '80px', background: '#fafafa', color: '#000', border: '1px solid #ccc', padding: '4px', fontSize: '10px' }}>Value</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -158,13 +158,13 @@ const StockSummary = () => {
                                             {/* Type Header */}
                                             <tr key={`header-${type}`}>
                                                 <td colSpan="14" style={{
-                                                    background: '#E0F2F1',
+                                                    background: '#fafafa',
                                                     fontWeight: 700,
                                                     fontSize: '12px',
                                                     textAlign: 'left',
                                                     padding: '8px 12px',
-                                                    color: '#00796B',
-                                                    border: '1px solid #B2DFDB'
+                                                    color: '#000',
+                                                    border: '1px solid #ddd'
                                                 }}>
                                                     {type}
                                                 </td>
@@ -214,19 +214,19 @@ const StockSummary = () => {
 
                                 {/* Grand Total */}
                                 <tr style={{ fontSize: '12px' }}>
-                                    <td colSpan="4" style={{ background: '#00796B', color: 'white', fontWeight: 700, textAlign: 'right', padding: '8px 12px', border: '1px solid #00695C' }}>
+                                    <td colSpan="4" style={{ background: '#000', color: 'white', fontWeight: 700, textAlign: 'right', padding: '8px 12px', border: '1px solid #000' }}>
                                         Grand Total:
                                     </td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, border: '1px solid #00695C', padding: '6px' }}>{grandTotals.openingQty}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #00695C', padding: '6px' }}>{formatCurrency(grandTotals.openingValue)}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, border: '1px solid #00695C', padding: '6px' }}>{grandTotals.receiveQty}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #00695C', padding: '6px' }}>{formatCurrency(grandTotals.receiveValue)}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, border: '1px solid #00695C', padding: '6px' }}>{grandTotals.salesQty}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #00695C', padding: '6px' }}>{formatCurrency(grandTotals.salesValue)}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, border: '1px solid #00695C', padding: '6px' }}>{grandTotals.returnQty}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #00695C', padding: '6px' }}>{formatCurrency(grandTotals.returnValue)}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, border: '1px solid #00695C', padding: '6px' }}>{grandTotals.closingQty}</td>
-                                    <td style={{ background: '#00796B', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #00695C', padding: '6px' }}>{formatCurrency(grandTotals.closingValue)}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, border: '1px solid #000', padding: '6px' }}>{grandTotals.openingQty}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #000', padding: '6px' }}>{formatCurrency(grandTotals.openingValue)}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, border: '1px solid #000', padding: '6px' }}>{grandTotals.receiveQty}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #000', padding: '6px' }}>{formatCurrency(grandTotals.receiveValue)}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, border: '1px solid #000', padding: '6px' }}>{grandTotals.salesQty}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #000', padding: '6px' }}>{formatCurrency(grandTotals.salesValue)}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, border: '1px solid #000', padding: '6px' }}>{grandTotals.returnQty}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #000', padding: '6px' }}>{formatCurrency(grandTotals.returnValue)}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, border: '1px solid #000', padding: '6px' }}>{grandTotals.closingQty}</td>
+                                    <td style={{ background: '#000', color: 'white', fontWeight: 700, textAlign: 'right', border: '1px solid #000', padding: '6px' }}>{formatCurrency(grandTotals.closingValue)}</td>
                                 </tr>
                             </tbody>
                         </table>

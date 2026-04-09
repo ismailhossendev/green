@@ -24,7 +24,7 @@ router.get('/', protect, canAccessModule('purchase'), async (req, res) => {
         }
 
         const purchases = await Purchase.find(query)
-            .populate('supplier', 'name phone')
+            .populate('supplier', 'name phone address')
             .populate('createdBy', 'name')
             .skip((page - 1) * limit)
             .limit(parseInt(limit))
@@ -197,6 +197,63 @@ router.post('/', protect, canAccessModule('purchase'), async (req, res) => {
         await supplierData.save();
 
         res.status(201).json(purchase);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   DELETE /api/purchase/:id
+// @desc    Delete purchase and rollback stock/supplier totals
+// @access  Private (Admin only)
+router.delete('/:id', protect, authorize('Admin'), async (req, res) => {
+    try {
+        const purchase = await Purchase.findById(req.params.id);
+
+        if (!purchase) {
+            return res.status(404).json({ message: 'Purchase not found' });
+        }
+
+        // 1. Rollback Stock
+        for (const item of purchase.items) {
+            const product = await Product.findById(item.productId);
+            if (product) {
+                product.stock.goodQty -= item.qty;
+                await product.save();
+            }
+        }
+
+        // 2. Rollback Supplier Data
+        const supplier = await Supplier.findById(purchase.supplier);
+        if (supplier) {
+            supplier.totalPurchaseAmount -= purchase.totalAmount;
+            supplier.totalPayment -= purchase.paidAmount;
+            supplier.totalDues -= purchase.dues;
+
+            // Optional: reset lastPurchaseNo if it matches
+            if (supplier.lastPurchaseNo === purchase.purchaseNo) {
+                const prevPurchase = await Purchase.findOne({ 
+                    supplier: supplier._id, 
+                    _id: { $ne: purchase._id } 
+                }).sort({ createdAt: -1 });
+
+                if (prevPurchase) {
+                    supplier.lastPurchaseNo = prevPurchase.purchaseNo;
+                    supplier.lastPurchaseAmount = prevPurchase.totalAmount;
+                    supplier.lastPurchaseDate = prevPurchase.date;
+                } else {
+                    supplier.lastPurchaseNo = null;
+                    supplier.lastPurchaseAmount = 0;
+                    supplier.lastPurchaseDate = null;
+                }
+            }
+            await supplier.save();
+        }
+
+        // 3. Delete Purchase
+        await Purchase.findByIdAndDelete(req.params.id);
+
+        res.json({ message: 'Purchase deleted and stock rolled back' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error', error: error.message });

@@ -175,6 +175,25 @@ h6 {
   font-weight: 600;
 }
 
+@media (max-width: 640px) {
+  .card {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -321,6 +340,28 @@ h6 {
 
 .table tr:last-child td {
   border-bottom: none;
+}
+
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8125rem;
+  }
 }
 
 /* Badges */
@@ -757,7 +798,24 @@ h6 {
   justify-content: space-between;
   margin-bottom: 1.5rem;
   gap: 1rem;
-  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .page-header-actions {

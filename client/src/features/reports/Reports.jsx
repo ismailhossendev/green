@@ -5,6 +5,7 @@ import { reportsAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
 import { FiTrendingUp, FiTrendingDown, FiDollarSign, FiShoppingCart, FiUsers, FiPackage } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import AssetManagement from './AssetManagement';
 import './Reports.css';
 
 const Reports = () => {
@@ -148,6 +149,15 @@ const Reports = () => {
                             {formatCurrency(customerDues?.data?.summary?.totalDues || 0)}
                         </span>
                     </div>
+                    <div style={{ marginTop: '1rem', textAlign: 'right' }}>
+                        <button 
+                            className="btn btn-sm btn-ghost" 
+                            style={{ padding: '0 0.5rem', fontSize: '0.75rem', textDecoration: 'underline' }}
+                            onClick={() => window.location.href = '/reports/company-ledger'}
+                        >
+                            View Summary Ledger
+                        </button>
+                    </div>
                 </div>
 
                 <div className="card">
@@ -164,6 +174,9 @@ const Reports = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Asset Management Module */}
+            <AssetManagement />
         </div>
     );
 };

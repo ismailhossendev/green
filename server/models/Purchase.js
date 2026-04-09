@@ -86,7 +86,7 @@ const PurchaseSchema = new mongoose.Schema({
 });
 
 // Generate purchase number
-PurchaseSchema.pre('save', async function (next) {
+PurchaseSchema.pre('validate', async function (next) {
     if (!this.purchaseNo) {
         const prefix = this.brand === 'Green Tel' ? 'PGT' : 'PGS';
         const count = await this.constructor.countDocuments({ brand: this.brand });

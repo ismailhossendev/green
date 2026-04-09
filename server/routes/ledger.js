@@ -105,6 +105,19 @@ router.get('/customer/:customerId', protect, canAccessModule('ledger'), async (r
         const invoiceMap = {};
         invoices.forEach(inv => { invoiceMap[inv._id.toString()] = inv; });
 
+        // Populate replacement data for Replacement-type entries
+        const Replacement = require('../models/Replacement');
+        const replacementIds = entries
+            .filter(e => e.type === 'Replacement' && e.referenceId)
+            .map(e => e.referenceId);
+        const replacements = replacementIds.length > 0
+            ? await Replacement.find({ _id: { $in: replacementIds } }).select('totalGood totalRepairable')
+            : [];
+        const replacementMap = {};
+        replacements.forEach(rep => { 
+            replacementMap[rep._id.toString()] = (rep.totalGood || 0) + (rep.totalRepairable || 0); 
+        });
+
         // Calculate running balance
         let runningBalance = 0;
         const formattedEntries = entries.map(entry => {
@@ -117,6 +130,11 @@ router.get('/customer/:customerId', protect, canAccessModule('ledger'), async (r
                 if (inv) {
                     obj.totalQty = inv.totalQty;
                 }
+            }
+
+            // For Replacement entries, attach qty data
+            if (entry.type === 'Replacement' && entry.referenceId) {
+                obj.totalQty = replacementMap[entry.referenceId.toString()];
             }
 
             return {
@@ -275,8 +293,8 @@ router.post('/adjustment', protect, authorize('Admin', 'Manager'), async (req, r
         });
 
         // Update customer
-        customer.totalAdjust += credit - debit;
-        customer.totalDues = newBalance;
+        customer.totalAdjust = (customer.totalAdjust || 0) + (credit - debit);
+        customer.totalDues = newBalance || 0;
         await customer.save();
 
         res.status(201).json(entry);
