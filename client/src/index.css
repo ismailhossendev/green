@@ -63,6 +63,12 @@
   --header-height: 64px;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -192,6 +198,22 @@ h6 {
   h3 {
     font-size: 1.25rem;
   }
+
+  .hidden-mobile {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+
+  .flex-mobile-col {
+    flex-direction: column !important;
+  }
+}
+
+.mobile-only {
+  display: none;
 }
 
 /* Buttons */
@@ -357,10 +379,21 @@ h6 {
 }
 
 @media (max-width: 640px) {
+  .table th:not(.mobile-visible),
+  .table td:not(.mobile-visible) {
+    /* Optional: Hide less important columns on mobile by default if tagged */
+  }
+
   .table th,
   .table td {
     padding: 0.75rem 0.5rem;
     font-size: 0.8125rem;
+  }
+  
+  .card-grid-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 

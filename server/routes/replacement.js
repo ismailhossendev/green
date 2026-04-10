@@ -230,7 +230,7 @@ router.post('/', protect, canAccessModule('replacement'), async (req, res) => {
         const { dealer, brand, items, totalClaimed } = req.body;
 
         const dealerData = await Customer.findById(dealer);
-        if (!dealerData || dealerData.type !== 'Dealer') {
+        if (!dealerData) {
             return res.status(400).json({ message: 'Invalid dealer' });
         }
 

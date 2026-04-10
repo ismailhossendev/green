@@ -64,6 +64,10 @@ const InvoiceSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    profit: {
+        type: Number,
+        default: 0
+    },
     discount: {
         type: Number,
         default: 0

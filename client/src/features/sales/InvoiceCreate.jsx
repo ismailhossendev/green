@@ -28,7 +28,7 @@ const InvoiceCreate = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // POS Search State
-    const [productSearchKey, setProductSearchKey] = useState(0); // To reset search input
+    const [productSearchKey, setProductSearchKey] = useState(0);
 
     // Update dues when customer selected
     useEffect(() => {
@@ -77,8 +77,8 @@ const InvoiceCreate = () => {
         const response = await inventoryAPI.getProducts({
             brand: currentBrand,
             search: query,
-            type: 'Product', // Hide Packets from POS selection
-            stockStatus: 'in-stock', // Only show in-stock items
+            type: 'Product',
+            stockStatus: 'in-stock',
             limit: 20
         });
         return response.data.products.map(p => ({
@@ -96,7 +96,6 @@ const InvoiceCreate = () => {
             const existingItem = prevItems.find(item => item.product._id === product._id);
 
             if (existingItem) {
-                // Increment Qty if stock allows
                 const newQty = existingItem.qty + 1;
                 if (newQty > product.stock.goodQty) {
                     toast.error(`Stock limit reached for ${product.modelName}`);
@@ -108,7 +107,6 @@ const InvoiceCreate = () => {
                         : item
                 );
             } else {
-                // Add new item
                 const price = priceType === 'Dealer' && product.dealerPrice > 0
                     ? product.dealerPrice
                     : product.salesPrice;
@@ -122,12 +120,11 @@ const InvoiceCreate = () => {
                         price: price,
                         isCombined: false
                     },
-                    ...prevItems // Add to top for visibility
+                    ...prevItems
                 ];
             }
         });
 
-        // Reset search input to allow rapid entry
         setProductSearchKey(prev => prev + 1);
     };
 
@@ -202,17 +199,16 @@ const InvoiceCreate = () => {
                     <h1 className="page-title">POS Invoice</h1>
                     <p className="page-subtitle">{currentBrand}</p>
                 </div>
-                {/* Save button moved to sidebar bottom */}
             </div>
 
             <div className="invoice-grid">
                 {/* Left - Work Area */}
                 <div className="invoice-form">
 
-                    {/* Top Section: Customer & Date */}
-                    <div className="card mb-4">
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="col-span-2">
+                    {/* Customer & Date */}
+                    <div className="card">
+                        <div className="customer-section">
+                            <div>
                                 <SearchableSelect
                                     label="Customer (Search by Name/Phone)"
                                     placeholder="Select Customer..."
@@ -223,7 +219,7 @@ const InvoiceCreate = () => {
                                     defaultOptions={true}
                                 />
                             </div>
-                            <div className="input-group">
+                            <div className="input-group" style={{ marginBottom: 0 }}>
                                 <label className="input-label">Date</label>
                                 <input
                                     type="date"
@@ -235,20 +231,20 @@ const InvoiceCreate = () => {
                         </div>
                     </div>
 
-                    {/* POS Section */}
-                    <div className="card">
-                        <div className="card-header items-center justify-between">
-                            <h3 className="card-title">Cart</h3>
+                    {/* Cart / POS */}
+                    <div className="card" style={{ padding: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 className="card-title" style={{ margin: 0 }}>🛒 Cart</h3>
                             <span className={`badge ${priceType === 'Dealer' ? 'badge-info' : 'badge-greenstar'}`}>
                                 {priceType} Price
                             </span>
                         </div>
 
-                        {/* Search Bar */}
-                        <div className="p-4 bg-gray-50 border-b border-gray-100">
+                        {/* Product Search */}
+                        <div className="pos-search-area">
                             <SearchableSelect
-                                key={productSearchKey} // Force reset on add
-                                placeholder="Scan or Search Product to Add..."
+                                key={productSearchKey}
+                                placeholder="🔍 Scan or Search Product..."
                                 loadOptions={loadProducts}
                                 onChange={handleProductSelect}
                                 labelKey="label"
@@ -257,76 +253,90 @@ const InvoiceCreate = () => {
                             />
                         </div>
 
-                        <div className="items-list">
+                        {/* Item List */}
+                        <div style={{ padding: '0.75rem' }}>
+                            {/* Desktop table header */}
                             <div className="items-header">
                                 <span style={{ flex: 3 }}>Item Name</span>
                                 <span style={{ flex: 1 }}>Stock</span>
                                 <span style={{ flex: 1 }}>Qty</span>
                                 <span style={{ flex: 1.5 }}>Price</span>
                                 <span style={{ flex: 1.5 }}>Total</span>
-                                <span style={{ width: '40px' }}></span>
+                                <span style={{ width: '36px' }}></span>
                             </div>
 
-                            {items.length === 0 ? (
-                                <div className="text-center p-8 text-gray-400">
-                                    <FiAlertCircle className="inline-block mb-2 text-2xl" />
-                                    <p>Cart is empty. Search products above.</p>
-                                </div>
-                            ) : (
-                                items.map((item) => (
-                                    <div key={item.id} className="item-row">
-                                        <div style={{ flex: 3 }}>
-                                            <div className="font-medium text-gray-800 flex items-center gap-2">
-                                                {item.product.modelName}
-                                                {item.type === 'Packet' && (
-                                                    <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full border border-green-200">Packet</span>
-                                                )}
-                                            </div>
-                                            <div className="text-xs text-gray-500">{item.product.description}</div>
-                                        </div>
-
-                                        <div style={{ flex: 1 }} className="flex items-center text-sm text-gray-500">
-                                            {item.product.stock.goodQty}
-                                        </div>
-
-                                        <div style={{ flex: 1 }}>
-                                            <input
-                                                type="number"
-                                                className="input text-center"
-                                                value={item.qty}
-                                                onChange={(e) => updateItem(item.id, 'qty', e.target.value)}
-                                                onFocus={(e) => e.target.select()}
-                                                min="1"
-                                            />
-                                        </div>
-
-                                        <div style={{ flex: 1.5 }}>
-                                            <input
-                                                type="number"
-                                                className="input text-right"
-                                                value={item.price}
-                                                onChange={(e) => updateItem(item.id, 'price', e.target.value)}
-                                                onFocus={(e) => e.target.select()}
-                                            />
-                                        </div>
-
-                                        <span className="item-total" style={{ flex: 1.5 }}>
-                                            {formatCurrency(item.qty * item.price)}
-                                        </span>
-
-                                        <button
-                                            className="btn btn-icon btn-danger"
-                                            onClick={() => removeItem(item.id)}
-                                        >
-                                            <FiTrash2 />
-                                        </button>
+                            <div className="items-list">
+                                {items.length === 0 ? (
+                                    <div className="empty-cart">
+                                        <FiAlertCircle />
+                                        <p>Cart is empty. Search products above.</p>
                                     </div>
-                                ))
-                            )}
+                                ) : (
+                                    items.map((item) => (
+                                        <div key={item.id} className="item-row">
+                                            {/* Left: Name + price formula */}
+                                            <div className="item-info">
+                                                <div className="item-name">
+                                                    {item.product.modelName}
+                                                    {item.type === 'Packet' && (
+                                                        <span className="packet-badge" style={{ marginLeft: '0.4rem' }}>Packet</span>
+                                                    )}
+                                                </div>
+                                                <div className="item-formula">
+                                                    {item.qty} × {formatCurrency(item.price)} = {formatCurrency(item.qty * item.price)}
+                                                </div>
+                                                {/* Price editable inline on tap */}
+                                                <div className="item-price-edit">
+                                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Price: </span>
+                                                    <input
+                                                        type="number"
+                                                        className="item-price-input"
+                                                        value={item.price}
+                                                        onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)}
+                                                        onFocus={(e) => e.target.select()}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Right: - qty + delete */}
+                                            <div className="item-qty-controls">
+                                                <button
+                                                    className="qty-btn"
+                                                    onClick={() => updateItem(item.id, 'qty', item.qty - 1 <= 0 ? 1 : item.qty - 1)}
+                                                >
+                                                    −
+                                                </button>
+                                                <input
+                                                    type="number"
+                                                    className="qty-input"
+                                                    value={item.qty}
+                                                    onChange={(e) => updateItem(item.id, 'qty', e.target.value)}
+                                                    onFocus={(e) => e.target.select()}
+                                                    min="1"
+                                                />
+                                                <button
+                                                    className="qty-btn"
+                                                    onClick={() => updateItem(item.id, 'qty', item.qty + 1)}
+                                                >
+                                                    +
+                                                </button>
+                                                <button
+                                                    className="item-remove-btn"
+                                                    onClick={() => removeItem(item.id)}
+                                                    title="Remove"
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="card mt-4">
+                    {/* Note */}
+                    <div className="card">
                         <div className="input-group mb-0">
                             <label className="input-label">Note / Reference</label>
                             <textarea
@@ -340,126 +350,128 @@ const InvoiceCreate = () => {
                     </div>
                 </div>
 
-                {/* Right - Summary */}
+                {/* Right / Bottom - Summary */}
                 <div className="invoice-summary">
-                    <div className="card summary-card sticky top-4 h-[calc(100vh-100px)] flex flex-col">
-                        {/* Header Stats */}
-                        <div className="text-center mb-6 pt-2">
-                            <div className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">{formatCurrency(grandTotal)}</div>
-                            <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">Grand Total</div>
+                    <div className="card summary-card">
+                        {/* Grand Total */}
+                        <div className="summary-total-display">
+                            <div className="summary-total-amount">{formatCurrency(grandTotal)}</div>
+                            <div className="summary-total-label">Grand Total</div>
                         </div>
 
-                        {/* Middle - Scrollable Content */}
-                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                            <div className="space-y-3 mb-6">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Total Items</span>
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">{items.length}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Total Qty</span>
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">{items.reduce((acc, i) => acc + (i.qty || 0), 0)}</span>
-                                </div>
-                                <div className="flex justify-between text-sm font-medium text-gray-800 dark:text-gray-200 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
-                                    <span>Sub Total</span>
-                                    <span>{formatCurrency(subTotal)}</span>
-                                </div>
-                            </div>
+                        <div className="summary-divider"></div>
 
-                            <div className="grid grid-cols-2 gap-3 mb-4">
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">Discount (%)</label>
-                                    <input
-                                        type="number"
-                                        className="input text-sm p-2"
-                                        value={discountPercent}
-                                        onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
-                                        onFocus={(e) => e.target.select()}
-                                        placeholder="0"
-                                        max="100"
-                                    />
-                                    {discountPercent > 0 && (
-                                        <div className="text-xs text-gray-400 mt-1">= {formatCurrency(discountAmount)}</div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">Rebate</label>
-                                    <input
-                                        type="number"
-                                        className="input text-sm p-2"
-                                        value={rebate}
-                                        onChange={(e) => setRebate(parseFloat(e.target.value) || 0)}
-                                        onFocus={(e) => e.target.select()}
-                                    />
-                                </div>
-                            </div>
+                        {/* Quick Stats */}
+                        <div className="summary-stats">
+                            <span>Total Items</span>
+                            <span>{items.length}</span>
+                        </div>
+                        <div className="summary-stats">
+                            <span>Total Qty</span>
+                            <span>{items.reduce((acc, i) => acc + (i.qty || 0), 0)}</span>
+                        </div>
+                        <div className="summary-stats" style={{ fontWeight: 600 }}>
+                            <span>Sub Total</span>
+                            <span>{formatCurrency(subTotal)}</span>
+                        </div>
 
-                            <div className="mb-4">
-                                <label className="text-xs font-medium text-gray-500 mb-1 block">Payment Method</label>
-                                <select
-                                    className="input select text-sm p-2 w-full"
-                                    value={paymentMethod}
-                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                >
-                                    <option value="Cash">Cash</option>
-                                    <option value="Bank">Bank Transfer</option>
-                                    <option value="Mobile Banking">Mobile Banking</option>
-                                    <option value="Due">Full Due</option>
-                                </select>
-                            </div>
+                        <div className="summary-divider"></div>
 
-                            <div className="mb-2">
-                                <label className="text-xs font-medium text-gray-500 mb-1 block">Paid Amount</label>
+                        {/* Discount & Rebate */}
+                        <div className="summary-inputs-grid">
+                            <div className="summary-input-group">
+                                <label>Discount (%)</label>
                                 <input
                                     type="number"
-                                    className="input text-lg font-bold text-green-600 p-3"
-                                    value={paidAmount}
-                                    onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
+                                    className="input"
+                                    value={discountPercent}
+                                    onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
+                                    onFocus={(e) => e.target.select()}
+                                    placeholder="0"
+                                    max="100"
+                                />
+                                {discountPercent > 0 && (
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '3px' }}>
+                                        = {formatCurrency(discountAmount)}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="summary-input-group">
+                                <label>Rebate (৳)</label>
+                                <input
+                                    type="number"
+                                    className="input"
+                                    value={rebate}
+                                    onChange={(e) => setRebate(parseFloat(e.target.value) || 0)}
                                     onFocus={(e) => e.target.select()}
                                 />
                             </div>
-
-                            {/* Change / Due Status */}
-                            {returnAmount > 0 ? (
-                                <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800 mb-4">
-                                    <span className="text-sm font-medium text-green-700 dark:text-green-400">Change Return</span>
-                                    <span className="text-lg font-bold text-green-700 dark:text-green-400">{formatCurrency(returnAmount)}</span>
-                                </div>
-                            ) : (
-                                <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-800 mb-4">
-                                    <span className="text-sm font-medium text-red-700 dark:text-red-400">Current Due</span>
-                                    <span className="text-lg font-bold text-red-700 dark:text-red-400">{formatCurrency(totalDues - previousDues)}</span>
-                                </div>
-                            )}
-
-                            {/* Dues Summary */}
-                            <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <div className="flex justify-between text-xs text-gray-400">
-                                    <span>Previous Dues</span>
-                                    <span>{formatCurrency(previousDues)}</span>
-                                </div>
-                                <div className="flex justify-between text-base font-bold text-gray-800 dark:text-gray-100">
-                                    <span>Net Payable</span>
-                                    <span>{formatCurrency(totalDues)}</span>
-                                </div>
-                            </div>
                         </div>
 
-                        {/* Bottom - Action Button */}
-                        <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <button
-                                className="w-full btn btn-primary py-3 text-lg font-bold shadow-lg shadow-green-100 dark:shadow-none hover:shadow-green-200 transition-all transform hover:-translate-y-0.5"
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
+                        {/* Payment Method */}
+                        <div className="summary-input-group">
+                            <label>Payment Method</label>
+                            <select
+                                className="input select"
+                                value={paymentMethod}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
                             >
-                                {isSubmitting ? 'Processing...' : (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <FiSave className="text-xl" />
-                                        Save Invoice
-                                    </span>
-                                )}
-                            </button>
+                                <option value="Cash">Cash</option>
+                                <option value="Bank">Bank Transfer</option>
+                                <option value="Mobile Banking">Mobile Banking</option>
+                                <option value="Due">Full Due</option>
+                            </select>
                         </div>
+
+                        {/* Paid Amount */}
+                        <div className="summary-input-group">
+                            <label>Paid Amount (৳)</label>
+                            <input
+                                type="number"
+                                className="input summary-paid-input"
+                                value={paidAmount}
+                                onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
+                                onFocus={(e) => e.target.select()}
+                            />
+                        </div>
+
+                        {/* Change / Due */}
+                        {returnAmount > 0 ? (
+                            <div className="status-box change">
+                                <span className="label">🔄 Change Return</span>
+                                <span className="amount">{formatCurrency(returnAmount)}</span>
+                            </div>
+                        ) : (
+                            <div className="status-box due">
+                                <span className="label">⚠️ Current Due</span>
+                                <span className="amount">{formatCurrency(totalDues - previousDues)}</span>
+                            </div>
+                        )}
+
+                        {/* Previous & Net Payable */}
+                        <div className="prev-dues-row">
+                            <span>Previous Dues</span>
+                            <span>{formatCurrency(previousDues)}</span>
+                        </div>
+                        <div className="net-payable-row">
+                            <span className="label">Net Payable</span>
+                            <span className="amount">{formatCurrency(totalDues)}</span>
+                        </div>
+
+                        <div className="summary-divider"></div>
+
+                        {/* Save Button */}
+                        <button
+                            className="save-invoice-btn"
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Processing...' : (
+                                <>
+                                    <FiSave /> Save Invoice
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@ import { formatCurrency } from '../../config/brandingConfig';
 import { FiPrinter, FiSearch, FiFilter, FiCalendar, FiUsers, FiTruck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useBrand } from '../../App';
+import { printHTML } from '../../utils/printHelper';
 
 const CompanyLedger = () => {
     const { currentBrand } = useBrand();
@@ -50,7 +51,6 @@ const CompanyLedger = () => {
     }), { opening: 0, sales: 0, payment: 0, adjust: 0, balance: 0 });
 
     const handlePrint = () => {
-        const printWindow = window.open('', '_blank');
         const dateStr = new Date().toLocaleDateString();
         const rangeText = dateRange.startDate && dateRange.endDate 
             ? `${dateRange.startDate} to ${dateRange.endDate}` 
@@ -130,19 +130,11 @@ const CompanyLedger = () => {
                     <div class="signature-box">Accountant Signature</div>
                     <div class="signature-box">Authorized Signature</div>
                 </div>
-
-                <script>
-                    window.onload = () => {
-                        window.print();
-                        window.onafterprint = () => window.close();
-                    };
-                </script>
             </body>
             </html>
         `;
 
-        printWindow.document.write(html);
-        printWindow.document.close();
+        printHTML(html);
     };
 
     return (

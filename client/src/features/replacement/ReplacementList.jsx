@@ -6,6 +6,7 @@ import { formatCurrency } from '../../config/brandingConfig';
 import { FiPlus, FiRefreshCw, FiPackage, FiCheckCircle, FiX, FiTool, FiDollarSign, FiTrash2, FiEye, FiTruck, FiActivity, FiSearch, FiPrinter } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import './ReplacementList.css';
+import { printHTML } from '../../utils/printHelper';
 
 const ReplacementList = () => {
     const { currentBrand } = useBrand();
@@ -55,8 +56,8 @@ const ReplacementList = () => {
     });
 
     const { data: dealersData } = useQuery({
-        queryKey: ['dealers', currentBrand],
-        queryFn: () => customerAPI.getCustomers({ brand: currentBrand, type: 'Dealer' }),
+        queryKey: ['customers', currentBrand],
+        queryFn: () => customerAPI.getCustomers({ brand: currentBrand, limit: 1000 }),
     });
 
     const { data: productsData } = useQuery({
@@ -208,7 +209,6 @@ const ReplacementList = () => {
     // --- RENDER HELPERS ---
 
     const handlePrint = (item) => {
-        const printWindow = window.open('', '_blank');
         const dateStr = new Date(item.date).toLocaleDateString('en-GB');
 
         const html = `
@@ -293,20 +293,14 @@ const ReplacementList = () => {
                         `).join('')}
                     </tbody>
                 </table>
-
                 <div class="footer">
                     <div class="signature-box">Dealer Signature</div>
                     <div class="signature-box">Authorized Signature</div>
                 </div>
-
-                <script>
-                    window.onload = () => { window.print(); window.onafterprint = () => window.close(); };
-                </script>
             </body>
             </html>
         `;
-        printWindow.document.write(html);
-        printWindow.document.close();
+        printHTML(html);
     };
 
     const getStatusColor = (status) => {

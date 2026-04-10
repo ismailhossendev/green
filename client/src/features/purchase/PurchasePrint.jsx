@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { formatCurrency, BrandingConfig } from '../../config/brandingConfig';
 import { FiPrinter, FiX } from 'react-icons/fi';
 import './PurchasePrint.css';
+import { printHTML } from '../../utils/printHelper';
 
 const PurchasePrint = ({ purchase, brand, onClose }) => {
     const printRef = useRef();
@@ -27,9 +28,7 @@ const PurchasePrint = ({ purchase, brand, onClose }) => {
 
     const handlePrint = () => {
         const printContent = printRef.current;
-        const printWindow = window.open('', '_blank');
-
-        printWindow.document.write(`
+        printHTML(`
       <!DOCTYPE html>
       <html>
         <head>
@@ -106,17 +105,9 @@ const PurchasePrint = ({ purchase, brand, onClose }) => {
         </head>
         <body>
           ${printContent.innerHTML}
-          <script>
-            window.onload = () => {
-              window.print();
-              window.onafterprint = () => window.close();
-            };
-          </script>
         </body>
       </html>
     `);
-
-        printWindow.document.close();
     };
 
     return (

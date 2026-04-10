@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useBrand } from '../../App';
+import { useBrand, useAuth } from '../../App';
 import { salesAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
 import { FiPlus, FiEye, FiPrinter, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
@@ -12,6 +12,7 @@ import InvoicePrint from './InvoicePrint';
 
 const InvoiceList = () => {
     const { currentBrand } = useBrand();
+    const { user } = useAuth();
     const queryClient = useQueryClient();
 
     // State
@@ -98,23 +99,31 @@ const InvoiceList = () => {
 
             {/* Stats Summary */}
             {!isLoading && (
-                <div className="grid grid-cols-4 gap-4">
-                    <div className="card text-center p-4">
-                        <h4 className="text-gray-500 text-sm">Total Quantity</h4>
-                        <p className="text-2xl font-bold">{totals.totalQty || 0}</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }} className="invoice-stats-grid">
+                    <div className="card text-center" style={{ padding: '0.75rem' }}>
+                        <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Total Qty</h4>
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{totals.totalQty || 0}</p>
                     </div>
-                    <div className="card text-center p-4">
-                        <h4 className="text-gray-500 text-sm">Total Sales</h4>
-                        <p className="text-2xl font-bold text-success">{formatCurrency(totals.totalAmount || 0)}</p>
+                    <div className="card text-center" style={{ padding: '0.75rem' }}>
+                        <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Total Sales</h4>
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>{formatCurrency(totals.totalAmount || 0)}</p>
                     </div>
-                    <div className="card text-center p-4">
-                        <h4 className="text-gray-500 text-sm">Total Paid</h4>
-                        <p className="text-2xl font-bold">{formatCurrency(totals.totalPaid || 0)}</p>
+                    <div className="card text-center" style={{ padding: '0.75rem' }}>
+                        <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Total Paid</h4>
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{formatCurrency(totals.totalPaid || 0)}</p>
                     </div>
-                    <div className="card text-center p-4">
-                        <h4 className="text-gray-500 text-sm">Total Due</h4>
-                        <p className="text-2xl font-bold text-danger">{formatCurrency(totals.totalDues || 0)}</p>
+                    <div className="card text-center" style={{ padding: '0.75rem' }}>
+                        <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Total Due</h4>
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--danger)' }}>{formatCurrency(totals.totalDues || 0)}</p>
                     </div>
+                    {['Admin', 'Manager'].includes(user?.role) && (
+                        <div className="card text-center" style={{ padding: '0.75rem', gridColumn: '1 / -1' }}>
+                            <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Total Profit</h4>
+                            <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--greentel-primary)' }}>
+                                {formatCurrency(totals.totalProfit || 0)}
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -164,6 +173,7 @@ const InvoiceList = () => {
                                 <th>Customer</th>
                                 <th>Total Qty</th>
                                 <th>Amount</th>
+                                {['Admin', 'Manager'].includes(user?.role) && <th>Profit</th>}
                                 <th>Discount</th>
                                 <th>Paid</th>
                                 <th>Due</th>
@@ -174,7 +184,7 @@ const InvoiceList = () => {
                         <tbody>
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan="10" className="text-center" style={{ padding: '3rem' }}>
+                                    <td colSpan={['Admin', 'Manager'].includes(user?.role) ? "11" : "10"} className="text-center" style={{ padding: '3rem' }}>
                                         <div className="spinner"></div>
                                     </td>
                                 </tr>
@@ -191,6 +201,11 @@ const InvoiceList = () => {
                                         </td>
                                         <td>{invoice.totalQty}</td>
                                         <td>{formatCurrency(invoice.grandTotal)}</td>
+                                        {['Admin', 'Manager'].includes(user?.role) && (
+                                            <td style={{ color: 'var(--greentel-primary)', fontWeight: 'bold' }}>
+                                                {formatCurrency(invoice.profit || 0)}
+                                            </td>
+                                        )}
                                         <td>{formatCurrency(invoice.discount)}</td>
                                         <td className="text-success">{formatCurrency(invoice.paidAmount)}</td>
                                         <td className={invoice.dues > 0 ? 'text-danger font-semibold' : ''}>
@@ -226,7 +241,7 @@ const InvoiceList = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="10" className="text-center text-muted" style={{ padding: '3rem' }}>
+                                    <td colSpan={['Admin', 'Manager'].includes(user?.role) ? "11" : "10"} className="text-center text-muted" style={{ padding: '3rem' }}>
                                         No invoices found
                                     </td>
                                 </tr>

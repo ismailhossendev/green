@@ -4,6 +4,7 @@ import { useBrand } from '../../App';
 import { reportsAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
 import { FiPrinter, FiCalendar } from 'react-icons/fi';
+import { printHTML } from '../../utils/printHelper';
 
 const MONTHS = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -30,8 +31,7 @@ const CompanySummary = () => {
         const content = printRef.current;
         if (!content) return;
 
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
+        printHTML(`
             <html>
             <head>
                 <title>Company Summary - ${MONTHS[month - 1]}'${year}</title>
@@ -57,9 +57,6 @@ const CompanySummary = () => {
             <body>${content.innerHTML}</body>
             </html>
         `);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
     };
 
     const typeOrder = ['Charger', 'Cable', 'Others'];

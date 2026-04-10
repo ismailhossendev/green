@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { getBrandLogo, getBrandTheme, formatCurrency, BrandingConfig } from '../../config/brandingConfig';
-import { FiPrinter, FiX, FiDownload } from 'react-icons/fi';
+import { FiPrinter, FiX, FiDownload, FiShare2 } from 'react-icons/fi';
 import './InvoicePrint.css';
+import { printHTML, exportToPDF, shareToWhatsApp } from '../../utils/printHelper';
 
 const InvoicePrint = ({ invoice, brand, onClose }) => {
     const printRef = useRef();
@@ -26,11 +27,9 @@ const InvoicePrint = ({ invoice, brand, onClose }) => {
         return convert(rounded) + ' Taka Only';
     };
 
-    const handlePrint = () => {
+    const getInvoiceHTML = () => {
         const printContent = printRef.current;
-        const printWindow = window.open('', '_blank');
-
-        printWindow.document.write(`
+        return `
       <!DOCTYPE html>
       <html>
         <head>
@@ -115,17 +114,22 @@ const InvoicePrint = ({ invoice, brand, onClose }) => {
         </head>
         <body>
           ${printContent.innerHTML}
-          <script>
-            window.onload = () => {
-              window.print();
-              window.onafterprint = () => window.close();
-            };
-          </script>
         </body>
       </html>
-    `);
+    `;
+    };
 
-        printWindow.document.close();
+    const handlePrint = () => {
+        printHTML(getInvoiceHTML());
+    };
+
+    const handleExport = () => {
+        exportToPDF(getInvoiceHTML(), `Invoice_${invoice.invoiceNo}`);
+    };
+
+    const handleShare = () => {
+        const text = `*Invoice No: ${invoice.invoiceNo}*\nAmount: ${formatCurrency(invoice.grandTotal)}\nDate: ${new Date(invoice.date).toLocaleDateString()}\nShared via ${brand} System.`;
+        shareToWhatsApp(getInvoiceHTML(), `Invoice_${invoice.invoiceNo}`, text);
     };
 
     const netPayable = invoice.dues + (invoice.previousDues || 0);
@@ -136,6 +140,12 @@ const InvoicePrint = ({ invoice, brand, onClose }) => {
                 <div className="invoice-print-header">
                     <h3>Invoice Preview</h3>
                     <div className="invoice-print-actions">
+                        <button className="btn btn-secondary" onClick={handleExport}>
+                            <FiDownload /> PDF
+                        </button>
+                        <button className="btn btn-success" onClick={handleShare}>
+                            <FiShare2 /> WhatsApp
+                        </button>
                         <button className="btn btn-primary" onClick={handlePrint}>
                             <FiPrinter /> Print
                         </button>

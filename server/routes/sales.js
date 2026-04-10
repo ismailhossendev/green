@@ -50,14 +50,15 @@ router.get('/invoices', protect, canAccessModule('sales'), async (req, res) => {
                     totalQty: { $sum: '$totalQty' },
                     totalAmount: { $sum: '$grandTotal' },
                     totalPaid: { $sum: '$paidAmount' },
-                    totalDues: { $sum: '$dues' }
+                    totalDues: { $sum: '$dues' },
+                    totalProfit: { $sum: '$profit' }
                 }
             }
         ]);
 
         res.json({
             invoices,
-            totals: totals[0] || { totalQty: 0, totalAmount: 0, totalPaid: 0, totalDues: 0 },
+            totals: totals[0] || { totalQty: 0, totalAmount: 0, totalPaid: 0, totalDues: 0, totalProfit: 0 },
             pagination: {
                 page: parseInt(page),
                 limit: parseInt(limit),
@@ -119,6 +120,7 @@ router.post('/invoices', protect, canAccessModule('sales'), async (req, res) => 
         // Calculate totals
         let totalQty = 0;
         let subTotal = 0;
+        let totalBuyPrice = 0;
         const processedItems = [];
 
         for (const item of items) {
@@ -137,6 +139,7 @@ router.post('/invoices', protect, canAccessModule('sales'), async (req, res) => 
             const itemTotal = item.qty * item.price;
             totalQty += item.qty;
             subTotal += itemTotal;
+            totalBuyPrice += (product.purchasePrice || 0) * item.qty;
 
             processedItems.push({
                 productId: item.productId,
@@ -165,6 +168,7 @@ router.post('/invoices', protect, canAccessModule('sales'), async (req, res) => 
         }
 
         const grandTotal = subTotal - (discount || 0) - (rebate || 0);
+        const profit = grandTotal - totalBuyPrice;
         const currentDue = grandTotal - (paidAmount || 0);
         const totalCustomerDues = currentDue + (customerData.totalDues || 0);
 
@@ -181,6 +185,7 @@ router.post('/invoices', protect, canAccessModule('sales'), async (req, res) => 
             discountFixed: discountFixed || 0,
             discountPercent: discountPercent || 0,
             rebate: rebate || 0,
+            profit,
             previousDues: customerData.totalDues,
             grandTotal,
             paidAmount: paidAmount || 0,

@@ -4,7 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useBrand } from '../../App';
 import { ledgerAPI, customerAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
-import { FiDownload, FiPrinter } from 'react-icons/fi';
+import { FiDownload, FiPrinter, FiDollarSign, FiShare2 } from 'react-icons/fi';
+import { printHTML, exportToPDF, shareToWhatsApp } from '../../utils/printHelper';
+import CustomerPaymentModal from '../customers/CustomerPaymentModal';
 
 const LedgerView = () => {
     const { currentBrand } = useBrand();
@@ -12,6 +14,7 @@ const LedgerView = () => {
     const [selectedCustomer, setSelectedCustomer] = useState(searchParams.get('customer') || '');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
 
     useEffect(() => {
         const customerParam = searchParams.get('customer');
@@ -247,26 +250,26 @@ const LedgerView = () => {
             '</body></html>';
     };
 
-    // Export as PDF (auto-trigger print dialog)
+    // Export as PDF
     const handleExport = () => {
         if (!customerInfo || entries.length === 0) return;
         const html = buildLedgerHTML();
-        const w = window.open('', '_blank');
-        w.document.write(html);
-        w.document.close();
-        w.focus();
-        setTimeout(() => { w.print(); }, 400);
+        exportToPDF(html, `Ledger_${customerInfo.companyName || customerInfo.name}`);
+    };
+
+    // Share to WhatsApp
+    const handleShare = () => {
+        if (!customerInfo || entries.length === 0) return;
+        const html = buildLedgerHTML();
+        const text = `*Party Ledger: ${customerInfo.companyName || customerInfo.name}*\nBalance: ${formatCurrency(closingBalance)}\nShared via ${currentBrand} System.`;
+        shareToWhatsApp(html, `Ledger_${customerInfo.companyName || customerInfo.name}`, text);
     };
 
     // Print (auto-trigger print and close)
     const handlePrint = () => {
         if (!customerInfo || entries.length === 0) return;
         const html = buildLedgerHTML();
-        const w = window.open('', '_blank');
-        w.document.write(html);
-        w.document.close();
-        w.focus();
-        setTimeout(() => { w.print(); w.close(); }, 400);
+        printHTML(html);
     };
 
     return (
@@ -277,8 +280,14 @@ const LedgerView = () => {
                     <p className="page-subtitle">{currentBrand} Communication</p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button className="btn btn-primary" onClick={() => setShowPaymentModal(true)} disabled={!customerInfo}>
+                        <FiDollarSign /> Receive Payment
+                    </button>
                     <button className="btn btn-secondary" onClick={handleExport} disabled={!customerInfo || entries.length === 0}>
-                        <FiDownload /> Export PDF
+                        <FiDownload /> PDF
+                    </button>
+                    <button className="btn btn-success" onClick={handleShare} disabled={!customerInfo || entries.length === 0}>
+                        <FiShare2 /> WhatsApp
                     </button>
                     <button className="btn btn-secondary" onClick={handlePrint} disabled={!customerInfo || entries.length === 0}>
                         <FiPrinter /> Print

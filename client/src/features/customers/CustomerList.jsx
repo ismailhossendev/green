@@ -17,15 +17,19 @@ const CustomerList = () => {
     const [district, setDistrict] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showDuesOnly, setShowDuesOnly] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [modalMode, setModalMode] = useState('add');
 
     const { data, isLoading } = useQuery({
         queryKey: ['customers', currentBrand, search, district],
-        queryFn: () => customerAPI.getCustomers({ brand: currentBrand, search, district }),
+        queryFn: () => customerAPI.getCustomers({ brand: currentBrand, search, district, limit: 1000 }),
     });
 
-    const customers = data?.data?.customers || [];
+    let customers = data?.data?.customers || [];
+    if (showDuesOnly) {
+        customers = customers.filter(c => c.totalDues > 0);
+    }
 
     // Fields for CrudModal
     const fields = [
@@ -144,6 +148,16 @@ const CustomerList = () => {
                         <option key={d} value={d}>{d}</option>
                     ))}
                 </select>
+
+                <label className="input" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 1rem', width: 'auto', marginBottom: 0, fontWeight: '500' }}>
+                    <input 
+                        type="checkbox" 
+                        checked={showDuesOnly} 
+                        onChange={(e) => setShowDuesOnly(e.target.checked)} 
+                        style={{ accentColor: 'var(--greentel-primary)' }}
+                    />
+                    Outstanding Dues Only
+                </label>
             </div>
 
             {/* Customer List */}

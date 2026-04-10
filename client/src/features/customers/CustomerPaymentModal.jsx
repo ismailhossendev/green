@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { paymentAPI } from '../../services/api';
+import { paymentAPI, ledgerAPI } from '../../services/api';
 import { FiX, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useBrand } from '../../App';
@@ -124,7 +124,7 @@ const CustomerPaymentModal = ({ customer, isOpen, onClose }) => {
                             border: '1px solid #334155'
                         }}>
                             <div className="text-sm text-muted">Customer</div>
-                            <div className="font-bold text-lg" style={{ color: '#fff' }}>{customer.name}</div>
+                            <div className="font-bold text-lg" style={{ color: '#fff' }}>{customer.companyName || customer.name}</div>
                             <div className="text-sm text-muted mt-2">Current Dues</div>
                             <div className="font-bold text-danger">{customer.totalDues}</div>
                         </div>
