@@ -146,6 +146,5 @@ InvoiceSchema.pre('validate', async function (next) {
 InvoiceSchema.index({ customer: 1 });
 InvoiceSchema.index({ brand: 1 });
 InvoiceSchema.index({ date: -1 });
-InvoiceSchema.index({ invoiceNo: 1 });
 
 module.exports = mongoose.model('Invoice', InvoiceSchema);

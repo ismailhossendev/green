@@ -29,7 +29,10 @@ const protect = async (req, res, next) => {
 
             next();
         } catch (error) {
-            console.error(error);
+            // Only log meaningful errors, not just malformed/expired tokens which are common client states
+            if (error.name !== 'JsonWebTokenError' && error.name !== 'TokenExpiredError') {
+                console.error('Auth Error:', error);
+            }
             return res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }

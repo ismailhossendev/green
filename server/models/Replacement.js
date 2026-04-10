@@ -147,6 +147,5 @@ ReplacementSchema.pre('save', async function (next) {
 ReplacementSchema.index({ dealer: 1 });
 ReplacementSchema.index({ brand: 1 });
 ReplacementSchema.index({ status: 1 });
-ReplacementSchema.index({ replacementNo: 1 });
 
 module.exports = mongoose.model('Replacement', ReplacementSchema);
