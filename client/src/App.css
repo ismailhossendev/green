@@ -1,9 +1,4 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* Default Vite styles removed to support full-screen dashboard layout */
 
 .logo {
   height: 6em;

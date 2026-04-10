@@ -1,7 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
 /* Green Tel & Green Star Business Management System */
 /* Premium Dark Theme with Dual-Brand Support */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
   /* Green Tel Theme */
@@ -860,17 +861,32 @@ h6 {
 /* ======================== */
 /* Filter Bar Responsive    */
 /* ======================== */
-.filter-bar {
+.filters-bar {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
   margin-bottom: 1.25rem;
+  align-items: center;
 }
 
-.filter-bar .input,
-.filter-bar .select {
-  min-width: 160px;
+.filters-bar .input,
+.filters-bar .select,
+.filters-bar .search-box {
+  min-width: 180px;
   flex: 1;
+}
+
+@media (max-width: 640px) {
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filters-bar .input,
+  .filters-bar .select,
+  .filters-bar .search-box {
+    width: 100% !important;
+  }
 }
 
 /* ======================== */
@@ -960,8 +976,46 @@ h6 {
 /* ======================== */
 /* Table Mobile Card View   */
 /* ======================== */
-@media (max-width: 480px) {
-  .table {
-    min-width: unset;
+@media (max-width: 640px) {
+  .table-responsive-cards thead {
+    display: none;
+  }
+  .table-responsive-cards tbody {
+    display: block;
+  }
+  .table-responsive-cards tr {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    gap: 0.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .table-responsive-cards td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border: none !important;
+    text-align: right;
+  }
+  .table-responsive-cards td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+  .table-responsive-cards .action-buttons {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
   }
 }
+

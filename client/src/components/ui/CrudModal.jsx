@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { FiX, FiSave, FiTrash2 } from 'react-icons/fi';
+import { useState, useEffect, useRef } from 'react';
+import { FiX, FiSave, FiTrash2, FiCheck, FiAlertCircle } from 'react-icons/fi';
 import './CrudModal.css';
 
 /**
@@ -27,6 +27,19 @@ const CrudModal = ({
 }) => {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
+    const [isVisible, setIsVisible] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+    const overlayRef = useRef(null);
+
+    // Animate in
+    useEffect(() => {
+        if (isOpen) {
+            requestAnimationFrame(() => {
+                setIsVisible(true);
+                setIsClosing(false);
+            });
+        }
+    }, [isOpen]);
 
     // Initialize form data
     useEffect(() => {
@@ -46,6 +59,16 @@ const CrudModal = ({
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: null }));
         }
+    };
+
+    // Animated close
+    const handleClose = () => {
+        setIsClosing(true);
+        setIsVisible(false);
+        setTimeout(() => {
+            setIsClosing(false);
+            onClose();
+        }, 200);
     };
 
     // Validate form
@@ -81,76 +104,110 @@ const CrudModal = ({
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen && !isClosing) return null;
 
     const isEdit = !!initialData?._id;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="crud-modal" onClick={(e) => e.stopPropagation()}>
+        <div
+            ref={overlayRef}
+            className={`crud-modal-overlay ${isVisible ? 'crud-modal-overlay--visible' : ''}`}
+            onClick={handleClose}
+        >
+            <div
+                className={`crud-modal-container ${isVisible ? 'crud-modal-container--visible' : ''}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Decorative top accent */}
+                <div className="crud-modal-accent" />
+
+                {/* Header */}
                 <div className="crud-modal-header">
-                    <h3>{isEdit ? `Edit ${title}` : `Add ${title}`}</h3>
-                    <button className="modal-close" onClick={onClose}>
-                        <FiX />
+                    <div className="crud-modal-header-left">
+                        <div className={`crud-modal-icon ${isEdit ? 'crud-modal-icon--edit' : 'crud-modal-icon--add'}`}>
+                            {isEdit ? <FiSave size={16} /> : <FiCheck size={16} />}
+                        </div>
+                        <div>
+                            <h3 className="crud-modal-title">
+                                {isEdit ? `Edit ${title}` : `New ${title}`}
+                            </h3>
+                            <p className="crud-modal-subtitle">
+                                {isEdit ? 'Update the details below' : 'Fill in the details to create'}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        className="crud-modal-close"
+                        onClick={handleClose}
+                        type="button"
+                    >
+                        <FiX size={18} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="crud-modal-form">
+                    {/* Body */}
                     <div className="crud-modal-body">
-                        <div className="form-grid">
+                        <div className="crud-modal-grid">
                             {fields.map((field) => (
                                 <div
                                     key={field.name}
-                                    className={`form-group ${field.fullWidth ? 'full-width' : ''}`}
+                                    className={`crud-field ${field.fullWidth || field.type === 'textarea' ? 'crud-field--full' : ''}`}
                                 >
-                                    <label className="form-label">
+                                    <label className="crud-field-label">
                                         {field.label}
-                                        {field.required && <span className="required">*</span>}
+                                        {field.required && <span className="crud-field-required">*</span>}
                                     </label>
 
                                     {renderField(field, formData, handleChange, errors)}
 
                                     {errors[field.name] && (
-                                        <span className="form-error">{errors[field.name]}</span>
+                                        <span className="crud-field-error">
+                                            <FiAlertCircle size={12} />
+                                            {errors[field.name]}
+                                        </span>
                                     )}
                                 </div>
                             ))}
                         </div>
                     </div>
 
+                    {/* Footer */}
                     <div className="crud-modal-footer">
                         {isEdit && onDelete && (
                             <button
                                 type="button"
-                                className="btn btn-danger btn-icon"
+                                className="crud-btn crud-btn--danger"
                                 onClick={handleDelete}
                                 disabled={loading}
                             >
-                                <FiTrash2 /> Delete
+                                <FiTrash2 size={14} />
+                                Delete
                             </button>
                         )}
-                        <div className="spacer"></div>
+                        <div className="crud-modal-footer-spacer" />
                         <button
                             type="button"
-                            className="btn btn-secondary"
-                            onClick={onClose}
+                            className="crud-btn crud-btn--ghost"
+                            onClick={handleClose}
                             disabled={loading}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="btn btn-primary btn-icon"
+                            className="crud-btn crud-btn--primary"
                             disabled={loading}
                         >
                             {loading ? (
                                 <>
-                                    <span className="spinner-small"></span>
+                                    <span className="crud-spinner" />
                                     Saving...
                                 </>
                             ) : (
                                 <>
-                                    <FiSave /> {isEdit ? 'Update' : 'Create'}
+                                    <FiSave size={14} />
+                                    {isEdit ? 'Update' : 'Create'}
                                 </>
                             )}
                         </button>
@@ -166,34 +223,38 @@ const renderField = (field, formData, handleChange, errors) => {
     const value = formData[field.name] ?? '';
     const hasError = !!errors[field.name];
 
+    const baseClass = `crud-input ${hasError ? 'crud-input--error' : ''}`;
+
     switch (field.type) {
         case 'select':
             return (
-                <select
-                    className={`input ${hasError ? 'error' : ''}`}
-                    value={value}
-                    onChange={(e) => handleChange(field.name, e.target.value)}
-                    disabled={field.disabled}
-                >
-                    <option value="">Select {field.label}</option>
-                    {field.options?.map((opt) => (
-                        <option
-                            key={typeof opt === 'object' ? opt.value : opt}
-                            value={typeof opt === 'object' ? opt.value : opt}
-                        >
-                            {typeof opt === 'object' ? opt.label : opt}
-                        </option>
-                    ))}
-                </select>
+                <div className="crud-select-wrapper">
+                    <select
+                        className={baseClass}
+                        value={value}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        disabled={field.disabled}
+                    >
+                        <option value="">Select {field.label}</option>
+                        {field.options?.map((opt) => (
+                            <option
+                                key={typeof opt === 'object' ? opt.value : opt}
+                                value={typeof opt === 'object' ? opt.value : opt}
+                            >
+                                {typeof opt === 'object' ? opt.label : opt}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             );
 
         case 'textarea':
             return (
                 <textarea
-                    className={`input ${hasError ? 'error' : ''}`}
+                    className={baseClass}
                     value={value}
                     onChange={(e) => handleChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
+                    placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}...`}
                     rows={field.rows || 3}
                     disabled={field.disabled}
                 />
@@ -203,10 +264,10 @@ const renderField = (field, formData, handleChange, errors) => {
             return (
                 <input
                     type="number"
-                    className={`input ${hasError ? 'error' : ''}`}
+                    className={baseClass}
                     value={value}
                     onChange={(e) => handleChange(field.name, parseFloat(e.target.value) || '')}
-                    placeholder={field.placeholder}
+                    placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                     min={field.min}
                     max={field.max}
                     step={field.step || 1}
@@ -218,7 +279,7 @@ const renderField = (field, formData, handleChange, errors) => {
             return (
                 <input
                     type="date"
-                    className={`input ${hasError ? 'error' : ''}`}
+                    className={baseClass}
                     value={value ? value.split('T')[0] : ''}
                     onChange={(e) => handleChange(field.name, e.target.value)}
                     disabled={field.disabled}
@@ -227,14 +288,20 @@ const renderField = (field, formData, handleChange, errors) => {
 
         case 'checkbox':
             return (
-                <label className="checkbox-label">
+                <label className="crud-checkbox">
                     <input
                         type="checkbox"
+                        className="crud-checkbox-input"
                         checked={!!value}
                         onChange={(e) => handleChange(field.name, e.target.checked)}
                         disabled={field.disabled}
                     />
-                    <span>{field.checkboxLabel || field.label}</span>
+                    <span className="crud-checkbox-box">
+                        <FiCheck size={12} />
+                    </span>
+                    <span className="crud-checkbox-label">
+                        {field.checkboxLabel || field.label}
+                    </span>
                 </label>
             );
 
@@ -242,10 +309,10 @@ const renderField = (field, formData, handleChange, errors) => {
             return (
                 <input
                     type="email"
-                    className={`input ${hasError ? 'error' : ''}`}
+                    className={baseClass}
                     value={value}
                     onChange={(e) => handleChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
+                    placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                     disabled={field.disabled}
                 />
             );
@@ -254,10 +321,10 @@ const renderField = (field, formData, handleChange, errors) => {
             return (
                 <input
                     type="password"
-                    className={`input ${hasError ? 'error' : ''}`}
+                    className={baseClass}
                     value={value}
                     onChange={(e) => handleChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
+                    placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                     disabled={field.disabled}
                 />
             );
@@ -267,10 +334,10 @@ const renderField = (field, formData, handleChange, errors) => {
             return (
                 <input
                     type="text"
-                    className={`input ${hasError ? 'error' : ''}`}
+                    className={baseClass}
                     value={value}
                     onChange={(e) => handleChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
+                    placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                     disabled={field.disabled}
                 />
             );

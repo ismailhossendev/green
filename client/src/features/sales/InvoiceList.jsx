@@ -163,9 +163,9 @@ const InvoiceList = () => {
             </div>
 
             {/* Invoices Table */}
-            <div className="card">
-                <div className="table-container">
-                    <table className="table">
+            <div className="card" style={{ padding: window.innerWidth <= 600 ? '0' : '1.5rem', background: window.innerWidth <= 600 ? 'transparent' : 'var(--bg-card)', border: window.innerWidth <= 600 ? 'none' : '1px solid var(--border-color)' }}>
+                <div className="table-container" style={{ border: window.innerWidth <= 600 ? 'none' : '1px solid var(--border-color)' }}>
+                    <table className="table table-responsive-cards">
                         <thead>
                             <tr>
                                 <th>Invoice No</th>
@@ -191,36 +191,33 @@ const InvoiceList = () => {
                             ) : invoices.length > 0 ? (
                                 invoices.map((invoice) => (
                                     <tr key={invoice._id}>
-                                        <td className="font-medium">{invoice.invoiceNo}</td>
-                                        <td>{new Date(invoice.date).toLocaleDateString()}</td>
-                                        <td>
-                                            <div>
+                                        <td data-label="Invoice No" className="font-medium">{invoice.invoiceNo}</td>
+                                        <td data-label="Date">{new Date(invoice.date).toLocaleDateString()}</td>
+                                        <td data-label="Customer">
+                                            <div style={{ textAlign: window.innerWidth <= 600 ? 'right' : 'left' }}>
                                                 {invoice.customer?.companyName && <div style={{ fontWeight: 600 }}>{invoice.customer.companyName}</div>}
                                                 <div style={{ fontSize: invoice.customer?.companyName ? '0.85em' : '1em', color: invoice.customer?.companyName ? '#999' : 'inherit' }}>{invoice.customer?.name || 'N/A'}</div>
                                             </div>
                                         </td>
-                                        <td>{invoice.totalQty}</td>
-                                        <td>{formatCurrency(invoice.grandTotal)}</td>
+                                        <td data-label="Total Qty">{invoice.totalQty}</td>
+                                        <td data-label="Amount">{formatCurrency(invoice.grandTotal)}</td>
                                         {['Admin', 'Manager'].includes(user?.role) && (
-                                            <td style={{ color: 'var(--greentel-primary)', fontWeight: 'bold' }}>
+                                            <td data-label="Profit" style={{ color: 'var(--greentel-primary)', fontWeight: 'bold' }}>
                                                 {formatCurrency(invoice.profit || 0)}
                                             </td>
                                         )}
-                                        <td>{formatCurrency(invoice.discount)}</td>
-                                        <td className="text-success">{formatCurrency(invoice.paidAmount)}</td>
-                                        <td className={invoice.dues > 0 ? 'text-danger font-semibold' : ''}>
+                                        <td data-label="Discount">{formatCurrency(invoice.discount)}</td>
+                                        <td data-label="Paid" className="text-success">{formatCurrency(invoice.paidAmount)}</td>
+                                        <td data-label="Due" className={invoice.dues > 0 ? 'text-danger font-semibold' : ''}>
                                             {formatCurrency(invoice.dues)}
                                         </td>
-                                        <td>
+                                        <td data-label="Status">
                                             <span className={`badge ${invoice.dues > 0 ? 'badge-warning' : 'badge-success'}`}>
                                                 {invoice.dues > 0 ? 'Due' : 'Paid'}
                                             </span>
                                         </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                {/* <button className="btn btn-icon btn-secondary">
-                                                    <FiEye />
-                                                </button> */}
+                                        <td data-label="Actions">
+                                            <div className="action-buttons">
                                                 <button
                                                     className="btn btn-icon btn-secondary"
                                                     onClick={() => setPrintInvoice(invoice)}

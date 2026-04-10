@@ -449,6 +449,12 @@ const LedgerView = () => {
                     </div>
                 </div>
             )}
+            {/* Payment Modal */}
+            <CustomerPaymentModal
+                isOpen={showPaymentModal}
+                customer={customerInfo ? { ...customerInfo, _id: selectedCustomer } : null}
+                onClose={() => setShowPaymentModal(false)}
+            />
         </div>
     );
 };
