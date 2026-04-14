@@ -10,11 +10,14 @@ import {
     FiTrendingUp as IncomeIcon, FiCreditCard, FiList, FiBox, FiTool
 } from 'react-icons/fi';
 import { FaUserTie, FaUsersCog, FaIndustry } from 'react-icons/fa';
+import QuickPaymentModal from './QuickPaymentModal';
+import { reportsAPI } from '../../services/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
     const { currentBrand } = useBrand();
     const { user } = useAuth();
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
 
     // Fetch today's stats (Revenue, Receive, Due, Profit)
     const { data, isLoading } = useQuery({
@@ -50,6 +53,48 @@ const Dashboard = () => {
                     <h1 className="dashboard-title">Welcome back, {user?.name}! 👋</h1>
                     <p className="dashboard-subtitle">Here's what's happening with {currentBrand} today.</p>
                 </div>
+            </div>
+
+            {/* Quick Actions Bar */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+                <button 
+                    onClick={() => setIsPaymentModalOpen(true)}
+                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-[#1e293b] border border-emerald-500/30 hover:border-emerald-500 transition-all text-center group"
+                >
+                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <FiDollarSign size={20} />
+                    </div>
+                    <div>
+                        <h4 className="text-[11px] font-bold text-slate-200">Receive</h4>
+                        <h4 className="text-[11px] font-bold text-slate-200">Payment</h4>
+                    </div>
+                </button>
+
+                <Link 
+                    to="/sales/new"
+                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-[#1e293b] border border-blue-500/30 hover:border-blue-500 transition-all text-center group"
+                >
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <FiShoppingCart size={20} />
+                    </div>
+                    <div>
+                        <h4 className="text-[11px] font-bold text-slate-200">New</h4>
+                        <h4 className="text-[11px] font-bold text-slate-200">Invoice</h4>
+                    </div>
+                </Link>
+
+                <Link 
+                    to="/inventory"
+                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-[#1e293b] border border-amber-500/30 hover:border-amber-500 transition-all text-center group"
+                >
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <FiPackage size={20} />
+                    </div>
+                    <div>
+                        <h4 className="text-[11px] font-bold text-slate-200">Check</h4>
+                        <h4 className="text-[11px] font-bold text-slate-200">Stock</h4>
+                    </div>
+                </Link>
             </div>
 
             {/* Top Stats Section */}
@@ -97,6 +142,12 @@ const Dashboard = () => {
                     </Link>
                 ))}
             </div>
+
+            {/* Quick Payment Modal */}
+            <QuickPaymentModal 
+                isOpen={isPaymentModalOpen} 
+                onClose={() => setIsPaymentModalOpen(false)} 
+            />
         </div>
     );
 };

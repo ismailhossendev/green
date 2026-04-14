@@ -198,7 +198,7 @@ const renderFilterInput = (filter, value, onChange) => {
                         value={value?.from || ''}
                         onChange={(e) => onChange(filter.name, { ...value, from: e.target.value })}
                     />
-                    <span>to</span>
+                    <span className="date-range-to">to</span>
                     <input
                         type="date"
                         className="filter-input"

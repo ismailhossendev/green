@@ -190,4 +190,29 @@
     .menu-text {
         font-size: 0.75rem;
     }
-}
+}
+
+/* Scrollbar Hide Utilities */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Animations */
+@keyframes fade-in-zoom {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.animate-in {
+    animation-fill-mode: both;
+}
+.fade-in-zoom {
+    animation: fade-in-zoom 0.2s ease-out;
+}

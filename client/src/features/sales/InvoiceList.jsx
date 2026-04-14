@@ -3,12 +3,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useBrand, useAuth } from '../../App';
 import { salesAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
-import { FiPlus, FiEye, FiPrinter, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiPlus, FiEye, FiPrinter, FiTrash2, FiChevronLeft, FiChevronRight, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import AdvancedFilter from '../../components/ui/AdvancedFilter';
 import toast from 'react-hot-toast';
 
 import InvoicePrint from './InvoicePrint';
+import './InvoiceList.css';
+
+const filterDefs = [
+    {
+        name: 'dateRange',
+        label: 'Date Range',
+        type: 'dateRange'
+    }
+];
 
 const InvoiceList = () => {
     const { currentBrand } = useBrand();
@@ -25,6 +34,7 @@ const InvoiceList = () => {
         endDate: ''
     });
     const [sortBy, setSortBy] = useState('createdAt');
+    const [expandedRows, setExpandedRows] = useState(new Set());
 
     // Query
     const { data, isLoading } = useQuery({
@@ -68,25 +78,25 @@ const InvoiceList = () => {
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= pagination.pages) {
             setPage(newPage);
+            setExpandedRows(new Set()); // Clear expansion on page change
         }
     };
 
-    const filterDefs = [
-        {
-            name: 'search',
-            label: 'Search',
-            type: 'text',
-            placeholder: 'Search invoice no or customer...'
-        },
-        {
-            name: 'dateRange',
-            label: 'Date Range',
-            type: 'dateRange'
+    const toggleRow = (id, e) => {
+        // Don't toggle if clicking a button
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        
+        const newExpanded = new Set(expandedRows);
+        if (newExpanded.has(id)) {
+            newExpanded.delete(id);
+        } else {
+            newExpanded.add(id);
         }
-    ];
+        setExpandedRows(newExpanded);
+    };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="flex flex-col gap-4">
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Sales / Invoices</h1>
@@ -99,7 +109,9 @@ const InvoiceList = () => {
 
             {/* Stats Summary */}
             {!isLoading && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }} className="invoice-stats-grid">
+                <div className="flex flex-col gap-2">
+                    <h3 className="section-title text-sm uppercase tracking-wider text-slate-500 font-bold px-1">Overview</h3>
+                    <div className="invoice-stats-grid">
                     <div className="card text-center" style={{ padding: '0.75rem' }}>
                         <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Total Qty</h4>
                         <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{totals.totalQty || 0}</p>
@@ -124,13 +136,14 @@ const InvoiceList = () => {
                             </p>
                         </div>
                     )}
+                    </div>
                 </div>
             )}
 
             {/* Filters */}
             <div className="card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1 }}>
+                <div className="filter-header-row">
+                    <div>
                         <AdvancedFilter
                             filters={filterDefs}
                             onFilterChange={(vals) => {
@@ -145,10 +158,11 @@ const InvoiceList = () => {
                                     handleFilterChange(vals);
                                 }
                             }}
-                            showSearch={false} // Using custom search in filters def
+                            showSearch={true}
+                            searchPlaceholder="Search invoices..."
                         />
                     </div>
-                    <div style={{ minWidth: '160px' }}>
+                    <div>
                         <select
                             className="input select text-sm"
                             value={sortBy}
@@ -163,8 +177,8 @@ const InvoiceList = () => {
             </div>
 
             {/* Invoices Table */}
-            <div className="card" style={{ padding: window.innerWidth <= 600 ? '0' : '1.5rem', background: window.innerWidth <= 600 ? 'transparent' : 'var(--bg-card)', border: window.innerWidth <= 600 ? 'none' : '1px solid var(--border-color)' }}>
-                <div className="table-container" style={{ border: window.innerWidth <= 600 ? 'none' : '1px solid var(--border-color)' }}>
+            <div className="card invoice-table-card">
+                <div className="table-container">
                     <table className="table table-responsive-cards">
                         <thead>
                             <tr>
@@ -190,11 +204,22 @@ const InvoiceList = () => {
                                 </tr>
                             ) : invoices.length > 0 ? (
                                 invoices.map((invoice) => (
-                                    <tr key={invoice._id}>
-                                        <td data-label="Invoice No" className="font-medium">{invoice.invoiceNo}</td>
+                                    <tr 
+                                        key={invoice._id}
+                                        className={`invoice-row ${expandedRows.has(invoice._id) ? 'is-expanded' : ''}`}
+                                        onClick={(e) => toggleRow(invoice._id, e)}
+                                    >
+                                        <td data-label="Invoice No" className="font-medium invoice-no-cell">
+                                            <div className="flex items-center gap-2">
+                                                <span className="mobile-chevron">
+                                                    {expandedRows.has(invoice._id) ? <FiChevronUp /> : <FiChevronDown />}
+                                                </span>
+                                                {invoice.invoiceNo}
+                                            </div>
+                                        </td>
                                         <td data-label="Date">{new Date(invoice.date).toLocaleDateString()}</td>
                                         <td data-label="Customer">
-                                            <div style={{ textAlign: window.innerWidth <= 600 ? 'right' : 'left' }}>
+                                            <div className="customer-cell">
                                                 {invoice.customer?.companyName && <div style={{ fontWeight: 600 }}>{invoice.customer.companyName}</div>}
                                                 <div style={{ fontSize: invoice.customer?.companyName ? '0.85em' : '1em', color: invoice.customer?.companyName ? '#999' : 'inherit' }}>{invoice.customer?.name || 'N/A'}</div>
                                             </div>

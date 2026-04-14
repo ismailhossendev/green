@@ -1,0 +1,144 @@
+/* Invoice List Specific Styles */
+
+.invoice-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 1024px) {
+    .invoice-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .invoice-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .invoice-stats-grid .card {
+        padding: 0.75rem 1rem !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: auto !important;
+        border-radius: var(--radius-md) !important;
+    }
+
+    .invoice-stats-grid .card h4 {
+        font-size: 0.8125rem !important;
+        margin-bottom: 0 !important;
+        color: var(--text-secondary) !important;
+        text-align: left !important;
+    }
+
+    .invoice-stats-grid .card p {
+        font-size: 1rem !important;
+        line-height: 1 !important;
+        font-weight: 700 !important;
+        text-align: right !important;
+    }
+}
+
+.filter-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-header-row > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .filter-header-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-header-row > div:first-child {
+        min-width: 100%;
+    }
+
+    .filter-header-row .select {
+        width: 100%;
+    }
+}
+
+/* Table Card Adjustments */
+.invoice-table-card {
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+}
+
+@media (max-width: 640px) {
+    .invoice-table-card {
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+    }
+
+    .invoice-table-card .table-container {
+        border: none !important;
+        background: transparent !important;
+    }
+}
+
+/* Mobile Collapsible Cards */
+.invoice-row {
+    cursor: default;
+}
+
+.mobile-chevron {
+    display: none;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+    .invoice-row {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .invoice-row:hover {
+        border-color: var(--greentel-primary);
+    }
+
+    .mobile-chevron {
+        display: inline-flex;
+    }
+
+    /* Columns to hide when collapsed on mobile */
+    .invoice-row:not(.is-expanded) td:not([data-label="Invoice No"]):not([data-label="Customer"]):not([data-label="Amount"]):not([data-label="Status"]) {
+        display: none !important;
+    }
+
+    /* Expansion styles */
+    .invoice-row.is-expanded {
+        border-color: var(--greentel-primary);
+        box-shadow: 0 0 15px rgba(0, 121, 107, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .invoice-row.is-expanded .mobile-chevron {
+        color: var(--greentel-primary);
+    }
+}
+
+/* Customer Cell Alignment */
+.customer-cell {
+    text-align: left;
+}
+
+@media (max-width: 640px) {
+    .customer-cell {
+        text-align: right;
+    }
+}
