@@ -68,7 +68,7 @@ const InvoiceCreate = () => {
         return response.data.customers.map(c => ({
             ...c,
             label: c.companyName || c.name,
-            subLabel: `${c.companyName ? c.name + ' • ' : ''}${c.phone} • ${c.type}`
+            subLabel: `${c.companyName ? '(' + c.name + ') • ' : ''}${c.phone} • ${c.type}`
         }));
     };
 

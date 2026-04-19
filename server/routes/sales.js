@@ -12,12 +12,28 @@ const { authorize, canAccessModule } = require('../middleware/rbac');
 // @access  Private
 router.get('/invoices', protect, canAccessModule('sales'), async (req, res) => {
     try {
-        const { brand, customerId, startDate, endDate, page = 1, limit = 50, sortBy = 'createdAt' } = req.query;
+        const { brand, customerId, search, startDate, endDate, page = 1, limit = 50, sortBy = 'createdAt' } = req.query;
 
         let query = {};
 
         if (brand) query.brand = brand;
         if (customerId) query.customer = customerId;
+
+        if (search) {
+            const matchingCustomers = await Customer.find({
+                $or: [
+                    { companyName: { $regex: search, $options: 'i' } },
+                    { name: { $regex: search, $options: 'i' } }
+                ]
+            }).select('_id');
+            const customerIds = matchingCustomers.map(c => c._id);
+
+            query.$or = [
+                { invoiceNo: { $regex: search, $options: 'i' } },
+                { customer: { $in: customerIds } }
+            ];
+        }
+
         if (startDate || endDate) {
             query.date = {};
             if (startDate) query.date.$gte = new Date(startDate);

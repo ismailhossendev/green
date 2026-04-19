@@ -18,6 +18,7 @@ router.get('/', protect, canAccessModule('customers'), async (req, res) => {
         if (district) query.district = district;
         if (search) {
             query.$or = [
+                { companyName: { $regex: search, $options: 'i' } },
                 { name: { $regex: search, $options: 'i' } },
                 { phone: { $regex: search, $options: 'i' } }
             ];
@@ -26,7 +27,7 @@ router.get('/', protect, canAccessModule('customers'), async (req, res) => {
         const customers = await Customer.find(query)
             .skip((page - 1) * limit)
             .limit(parseInt(limit))
-            .sort({ name: 1 });
+            .sort({ companyName: 1, name: 1 });
 
         const total = await Customer.countDocuments(query);
 
@@ -149,10 +150,11 @@ router.get('/:id', protect, canAccessModule('customers'), async (req, res) => {
 // @access  Private
 router.post('/', protect, canAccessModule('customers'), async (req, res) => {
     try {
-        const { name, phone, email, address, district, brand, type } = req.body;
+        const { name, companyName, phone, email, address, district, brand, type } = req.body;
 
         const customer = await Customer.create({
             name,
+            companyName,
             phone,
             email,
             address,

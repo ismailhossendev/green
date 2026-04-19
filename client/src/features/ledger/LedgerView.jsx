@@ -170,81 +170,102 @@ const LedgerView = () => {
         const dealerName = customerInfo.companyName || customerInfo.name;
         const rowsHTML = rows.map(r => {
             if (r.type === 'Opening Balance') {
-                return '<tr><td></td><td colspan="2" style="font-weight:600;font-style:italic;padding:3px 6px;border:1px solid #000;color:#000 !important">Opening Balance</td><td colspan="6" style="border:1px solid #000"></td><td style="text-align:right;font-weight:600;border:1px solid #000;padding:3px 6px;color:#000 !important">' + formatCurrency(r.dues) + '</td><td style="border:1px solid #000"></td></tr>';
+                return '<tr>' +
+                    '<td style="border:1px solid #000">&nbsp;</td>' +
+                    '<td style="font-weight:600;font-style:italic;padding:3px 6px;border:1px solid #000;color:#000 !important;background:#f5f5f5 !important;white-space:nowrap">Opening Balance</td>' +
+                    '<td style="border:1px solid #000;background:#f5f5f5 !important">&nbsp;</td>' +
+                    '<td style="border:1px solid #000">&nbsp;</td>' +
+                    '<td style="border:1px solid #000">&nbsp;</td>' +
+                    '<td style="border:1px solid #000">&nbsp;</td>' +
+                    '<td style="border:1px solid #000">&nbsp;</td>' +
+                    '<td style="border:1px solid #000">&nbsp;</td>' +
+                    '<td style="text-align:right;font-weight:600;border:1px solid #000;padding:3px 6px;color:#000 !important">' + formatCurrency(r.dues) + '</td>' +
+                    '<td style="border:1px solid #000">&nbsp;</td>' +
+                    '</tr>';
             }
             return '<tr>' +
-                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + r.sl + '</td>' +
-                '<td style="border:1px solid #000;padding:2px 4px;color:#000 !important">' + r.date + '</td>' +
-                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + r.invoiceNo + '</td>' +
-                '<td style="border:1px solid #000;padding:2px 4px;font-weight:500;color:#000 !important">' + r.type + '</td>' +
-                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + (r.totalQty || '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.amount ? formatCurrency(r.amount) : '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.payment ? formatCurrency(r.payment) : '') + '</td>' +
-                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.adjustment ? formatCurrency(r.adjustment) : '') + '</td>' +
+                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + (r.sl || '&nbsp;') + '</td>' +
+                '<td style="border:1px solid #000;padding:2px 4px;color:#000 !important;white-space:nowrap">' + (r.date || '&nbsp;') + '</td>' +
+                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important;word-break:break-all">' + (r.invoiceNo || '&nbsp;') + '</td>' +
+                '<td style="border:1px solid #000;padding:2px 4px;font-weight:500;color:#000 !important">' + (r.type || '&nbsp;') + '</td>' +
+                '<td style="text-align:center;border:1px solid #000;padding:2px;color:#000 !important">' + (r.totalQty || '&nbsp;') + '</td>' +
+                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.amount ? formatCurrency(r.amount) : '&nbsp;') + '</td>' +
+                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.payment ? formatCurrency(r.payment) : '&nbsp;') + '</td>' +
+                '<td style="text-align:right;border:1px solid #000;padding:2px 4px;color:#000 !important">' + (r.adjustment ? formatCurrency(r.adjustment) : '&nbsp;') + '</td>' +
                 '<td style="text-align:right;border:1px solid #000;padding:2px 4px;font-weight:600;color:#000 !important">' + formatCurrency(r.dues) + '</td>' +
-                '<td style="border:1px solid #000;padding:2px;font-size:7px">' + (r.remarks || '') + '</td>' +
+                '<td style="border:1px solid #000;padding:2px;font-size:7px;word-break:break-word;white-space:normal">' + (r.remarks || '&nbsp;') + '</td>' +
                 '</tr>';
         }).join('');
 
         return '<html><head><title>Party Ledger - ' + dealerName + '</title>' +
             '<style>' +
-            '* { margin:0;padding:0;box-sizing:border-box;color:#000 !important; }' +
-            'body { font-family:"Segoe UI",Arial,sans-serif;padding:10px;color:#000 !important;font-size:9px;background:#fff !important;line-height:1.2; }' +
-            '@page { size:portrait;margin:5mm; }' +
-            '@media print { body { padding:0; } table { border:1.5px solid #000; } }' +
+            '* { margin:0;padding:0;box-sizing:border-box;color:#000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            'body { font-family:"Segoe UI",Arial,sans-serif;padding:8mm;color:#000 !important;font-size:9px;background:#fff !important;line-height:1.2; }' +
+            '@page { size:portrait;margin:0; }' +
             'table { width:100%;border-collapse:collapse;border:1.5px solid #000; }' +
-            'th { background:#eee !important;color:#000 !important;padding:3px 2px;font-size:8px;border:1px solid #000;text-transform:capitalize; }' +
-            'td { border:1px solid #000;padding:2px 3px; }' +
+            'th { background:#f2f2f2 !important;color:#000 !important;padding:4px 5px;font-size:8px;border:1px solid #000;text-transform:uppercase;font-weight:700;vertical-align:top; }' +
+            'td { border:1px solid #000;padding:3px 5px;vertical-align:top; }' +
+            '.header-section { margin-bottom:15px; overflow:hidden; }' +
+            '.header-left { float:left; width:65%; }' +
+            '.header-right { float:right; width:30%; text-align:right; }' +
+            '.clear { clear:both; }' +
+            '.total-row td { background:#f2f2f2 !important; font-weight:700; }' +
             '</style></head><body>' +
 
-            '<div style="text-align:center;margin-bottom:10px;color:#000 !important">' +
-            '<h1 style="font-size:14px;font-weight:700;color:#000 !important;text-transform:uppercase;margin:0">' + currentBrand + ' Communication</h1>' +
-            '<h2 style="font-size:10px;margin-top:2px;font-weight:600;color:#000 !important">Party Ledger</h2>' +
+            '<div style="text-align:center;margin-bottom:15px;color:#000 !important;border-bottom:2px solid #000;padding-bottom:10px">' +
+            '<h1 style="font-size:18px;font-weight:700;color:#000 !important;text-transform:uppercase;margin:0">' + currentBrand + ' Communication</h1>' +
+            '<h2 style="font-size:12px;margin-top:2px;font-weight:600;color:#000 !important;letter-spacing:1px">PARTY LEDGER REPORT</h2>' +
             '</div>' +
 
-            '<div style="margin-bottom:8px;font-size:11px;line-height:1.7">' +
-            '<div style="display:flex;justify-content:space-between">' +
-            '<span><b>Dealer Name:</b> ' + dealerName + '</span>' +
-            '<span><b>Duration:</b> ' + duration + '</span>' +
+            '<div class="header-section">' +
+            '<div class="header-left">' +
+            '<div style="margin-bottom:3px"><b>Dealer Name:</b> <span style="font-size:11px">' + dealerName + '</span></div>' +
+            '<div style="margin-bottom:3px"><b>Address:</b> ' + (customerInfo.address || customerInfo.district || 'N/A') + '</div>' +
+            '<div style="margin-bottom:3px"><b>Contact:</b> ' + (customerInfo.phone || 'N/A') + '</div>' +
             '</div>' +
-            '<div><b>Address:</b> ' + (customerInfo.address || customerInfo.district || 'N/A') + '</div>' +
-            '<div><b>Contact:</b> ' + (customerInfo.phone || 'N/A') + '</div>' +
-            '<div><b>Date:</b> ' + formatDate(new Date()) + '</div>' +
+            '<div class="header-right">' +
+            '<div style="margin-bottom:3px"><b>Duration:</b> ' + (duration || 'Full History') + '</div>' +
+            '<div style="margin-bottom:3px"><b>Date:</b> ' + formatDate(new Date()) + '</div>' +
             '</div>' +
+            '</div><div class="clear"></div>' +
 
             '<table>' +
             '<thead><tr>' +
-            '<th style="width:30px">SL</th>' +
-            '<th style="width:65px">Date</th>' +
-            '<th style="width:90px">Invoice</th>' +
-            '<th style="width:40px">Type</th>' +
-            '<th style="width:40px">Qty</th>' +
-            '<th style="width:70px;text-align:right">Sales</th>' +
-            '<th style="width:70px;text-align:right">Pay</th>' +
-            '<th style="width:70px;text-align:right">Return/Adj</th>' +
-            '<th style="width:80px;text-align:right">Dues</th>' +
-            '<th style="width:65px">Remarks</th>' +
+            '<th style="width:3%">SL</th>' +
+            '<th style="width:10%">Date</th>' +
+            '<th style="width:13%">Invoice</th>' +
+            '<th style="width:5%">Type</th>' +
+            '<th style="width:5%">Qty</th>' +
+            '<th style="width:10%;text-align:right">Sales</th>' +
+            '<th style="width:10%;text-align:right">Pay</th>' +
+            '<th style="width:10%;text-align:right">Ret/Adj</th>' +
+            '<th style="width:12%;text-align:right">Dues</th>' +
+            '<th style="width:22%">Remarks</th>' +
             '</tr></thead>' +
             '<tbody>' + rowsHTML +
 
-            '<tr style="font-weight:700;background:#eee !important;color:#000 !important">' +
-            '<td colspan="4" style="text-align:right;padding:4px;border:1px solid #000;font-size:9px;color:#000 !important">Total</td>' +
-            '<td style="text-align:center;border:1px solid #000;padding:4px;color:#000 !important">' + totals.totalQty + '</td>' +
-            '<td style="text-align:right;border:1px solid #000;padding:4px;color:#000 !important">' + formatCurrency(totals.amount) + '</td>' +
-            '<td style="text-align:right;border:1px solid #000;padding:4px;color:#000 !important">' + formatCurrency(totals.payment) + '</td>' +
-            '<td style="text-align:right;border:1px solid #000;padding:4px;color:#000 !important">' + formatCurrency(totals.adjustment) + '</td>' +
-            '<td style="text-align:right;border:1px solid #000;padding:4px;font-size:10px;color:#000 !important">' + formatCurrency(closingBalance) + '</td>' +
-            '<td style="border:1px solid #000"></td>' +
+            '<tr class="total-row">' +
+            '<td style="border:1px solid #000">&nbsp;</td>' +
+            '<td style="border:1px solid #000">&nbsp;</td>' +
+            '<td style="border:1px solid #000">&nbsp;</td>' +
+            '<td style="text-align:right;padding:4px;border:1px solid #000;font-size:9px">TOTAL</td>' +
+            '<td style="text-align:center;border:1px solid #000;padding:4px">' + totals.totalQty + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px">' + formatCurrency(totals.amount) + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px">' + formatCurrency(totals.payment) + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px">' + formatCurrency(totals.adjustment) + '</td>' +
+            '<td style="text-align:right;border:1px solid #000;padding:4px;font-size:10px">' + formatCurrency(closingBalance) + '</td>' +
+            '<td style="border:1px solid #000">&nbsp;</td>' +
             '</tr>' +
             '</tbody></table>' +
 
-            '<div style="margin-top:10px;padding:8px;border:1px solid #bbb;background:#f9f9f9 !important">' +
-            '<b style="color:#000 !important">Closing Dues in Words: </b> <i style="color:#000 !important">' + numberToWords(closingBalance) + '</i>' +
+            '<div style="margin-top:15px;padding:8px;border:1px solid #000;background:#fff !important">' +
+            '<b style="color:#000 !important;text-transform:uppercase;font-size:8px">Closing Dues in Words: </b> <br/>' +
+            '<i style="color:#000 !important;font-size:10px;font-weight:600">' + numberToWords(closingBalance) + '</i>' +
             '</div>' +
 
-            '<div style="display:flex;justify-content:space-between;margin-top:40px;padding:0 30px">' +
-            '<div style="text-align:center;border-top:1px solid #333;padding-top:4px;width:150px;font-size:9px;font-weight:600;color:#000 !important">Dealer Signature</div>' +
-            '<div style="text-align:center;border-top:1px solid #333;padding-top:4px;width:150px;font-size:9px;font-weight:600;color:#000 !important">Authorized Signature</div>' +
+            '<div style="margin-top:60px; overflow:hidden; width:100%">' +
+            '<div style="float:left; text-align:center; border-top:1.5px solid #000; width:140px; font-size:9px; font-weight:700; color:#000 !important; padding-top:5px">Dealer Signature</div>' +
+            '<div style="float:right; text-align:center; border-top:1.5px solid #000; width:140px; font-size:9px; font-weight:700; color:#000 !important; padding-top:5px">Authorized Signature</div>' +
             '</div>' +
 
             '</body></html>';
@@ -304,7 +325,7 @@ const LedgerView = () => {
                             <option value="">-- Select Dealer --</option>
                             {customers.map(customer => (
                                 <option key={customer._id} value={customer._id}>
-                                    {customer.companyName || customer.name} ({customer.phone})
+                                    {customer.companyName || customer.name} {customer.companyName ? `(${customer.name})` : ''} — {customer.phone}
                                 </option>
                             ))}
                         </select>
@@ -325,11 +346,11 @@ const LedgerView = () => {
                 <div className="card" style={{ background: '#f8fafc', border: '1px solid #ddd' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div style={{ lineHeight: 1.7, fontSize: '0.875rem' }}>
-                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#000' }}>
+                            <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#000' }}>
                                 {customerInfo.companyName || customerInfo.name}
                             </div>
                             {customerInfo.companyName && (
-                                <div style={{ color: '#555' }}>{customerInfo.name}</div>
+                                <div style={{ color: '#555', fontSize: '0.9rem', fontWeight: 500 }}>Owned by: {customerInfo.name}</div>
                             )}
                             <div style={{ color: '#666' }}>📍 {customerInfo.address || customerInfo.district || 'N/A'}</div>
                             <div style={{ color: '#666' }}>📞 {customerInfo.phone || 'N/A'}</div>

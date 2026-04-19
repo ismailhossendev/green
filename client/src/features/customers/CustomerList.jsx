@@ -229,9 +229,9 @@ const CustomerList = () => {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-white truncate leading-tight">
-                                            {customer.companyName || 'Individual'}
+                                            {customer.companyName || customer.name}
                                         </p>
-                                        <p className="text-[11px] text-slate-500 truncate mt-0.5">{customer.name}</p>
+                                        {customer.companyName && <p className="text-[11px] text-slate-500 truncate mt-0.5">{customer.name}</p>}
                                     </div>
                                 </div>
                                 <div className="text-right shrink-0 ml-3">
@@ -319,9 +319,9 @@ const CustomerList = () => {
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-white truncate leading-tight group-hover:text-teal-400 transition-colors">
-                                                    {customer.companyName || 'Individual'}
+                                                    {customer.companyName || customer.name}
                                                 </p>
-                                                <p className="text-[11px] text-slate-500 truncate mt-0.5">{customer.name}</p>
+                                                {customer.companyName && <p className="text-[11px] text-slate-500 truncate mt-0.5">{customer.name}</p>}
                                             </div>
                                         </div>
                                     </td>

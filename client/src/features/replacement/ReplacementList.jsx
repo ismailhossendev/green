@@ -61,8 +61,8 @@ const ReplacementList = () => {
     });
 
     const { data: productsData } = useQuery({
-        queryKey: ['products', currentBrand],
-        queryFn: () => inventoryAPI.getProducts({ brand: currentBrand }),
+        queryKey: ['products', currentBrand, 'returnable'],
+        queryFn: () => inventoryAPI.getProducts({ brand: currentBrand, type: 'Product', limit: 500 }),
     });
 
     const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -135,7 +135,7 @@ const ReplacementList = () => {
         const product = products.find(p => p._id === newItem.product);
         setCreateForm(prev => ({
             ...prev,
-            items: [...prev.items, { ...newItem, productName: product.modelName }]
+            items: [...prev.items, { ...newItem, productName: product?.modelName || 'Unknown' }]
         }));
         setNewItem({ product: '', productName: '', claimedQty: 1 });
     };
@@ -155,14 +155,14 @@ const ReplacementList = () => {
     // Triage Handlers
     const openTriageModal = (item) => {
         setTriageItem(item);
-        // Initialize state with defaults from DB
         setTriageData(item.items.map(i => ({
             product: i.product._id,
-            productName: i.product.modelName, // Display name
+            productName: i.product.modelName,
+            unitPrice: i.product.salesPrice || 0,
             claimedQty: i.claimedQty,
             goodQty: 0,
             repairableQty: 0,
-            damageQty: 0
+            badQty: 0
         })));
     };
 
@@ -173,9 +173,8 @@ const ReplacementList = () => {
     };
 
     const handleTriageSubmit = () => {
-        // Validation: Sum check?
         const isValid = triageData.every(i =>
-            (i.goodQty + i.repairableQty + i.damageQty) === i.claimedQty
+            (i.goodQty + i.repairableQty + i.badQty) === i.claimedQty
         );
 
         if (!isValid) {
@@ -188,7 +187,7 @@ const ReplacementList = () => {
                 product: i.product,
                 goodQty: i.goodQty,
                 repairableQty: i.repairableQty,
-                damageQty: i.damageQty
+                badQty: i.badQty
             }))
         });
     };
@@ -257,11 +256,6 @@ const ReplacementList = () => {
                         <div class="section-label">Summary</div>
                         <div style="display: flex; justify-content: space-between;"><span>Status:</span> <span class="info-val">${item.status}</span></div>
                         <div style="display: flex; justify-content: space-between;"><span>Total Claimed:</span> <span class="info-val">${item.totalClaimed}</span></div>
-                        ${item.status !== 'Pending' ? `
-                            <div style="display: flex; justify-content: space-between;"><span>Good Accepted:</span> <span class="info-val">${item.totalGood}</span></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Repairable:</span> <span class="info-val">${item.totalRepairable}</span></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Damage/Rejected:</span> <span class="info-val">${item.totalDamage}</span></div>
-                        ` : ''}
                     </div>
                 </div>
 
@@ -275,6 +269,8 @@ const ReplacementList = () => {
                                 <th style="width: 60px" class="text-center">Good</th>
                                 <th style="width: 60px" class="text-center">Repair</th>
                                 <th style="width: 60px" class="text-center">Bad</th>
+                                <th style="width: 80px" class="text-right">Price</th>
+                                <th style="width: 100px" class="text-right">Total</th>
                             ` : ''}
                         </tr>
                     </thead>
@@ -285,13 +281,23 @@ const ReplacementList = () => {
                                 <td>${it.product?.modelName || it.productName}</td>
                                 <td class="text-center">${it.claimedQty}</td>
                                 ${item.status !== 'Pending' ? `
-                                    <td class="text-center">${it.goodQty}</td>
-                                    <td class="text-center">${it.repairableQty}</td>
-                                    <td class="text-center">${it.damageQty}</td>
+                                    <td class="text-center">${it.goodQty || 0}</td>
+                                    <td class="text-center">${it.repairableQty || 0}</td>
+                                    <td class="text-center">${it.badQty || 0}</td>
+                                    <td class="text-right">${formatCurrency(it.unitPrice || 0)}</td>
+                                    <td class="text-right">${formatCurrency((it.goodQty + it.repairableQty) * (it.unitPrice || 0))}</td>
                                 ` : ''}
                             </tr>
                         `).join('')}
                     </tbody>
+                    ${item.status !== 'Pending' ? `
+                    <tfoot>
+                        <tr style="font-weight: bold; background: #eee;">
+                            <td colspan="7" class="text-right">Return Total:</td>
+                            <td class="text-right">${formatCurrency(item.items.reduce((sum, it) => sum + (it.goodQty + it.repairableQty) * (it.unitPrice || 0), 0))}</td>
+                        </tr>
+                    </tfoot>
+                    ` : ''}
                 </table>
                 <div class="footer">
                     <div class="signature-box">Dealer Signature</div>
@@ -308,7 +314,7 @@ const ReplacementList = () => {
             case 'Pending': return 'secondary';
             case 'Checked': return 'info';
             case 'Sent to Factory': return 'warning';
-            case 'Repaired': return 'success'; // Repaired & Stocked
+            case 'Repaired': return 'success';
             case 'Closed': return 'dark';
             default: return 'secondary';
         }
@@ -378,7 +384,7 @@ const ReplacementList = () => {
                     <div>
                         <select className="input w-full" value={dealerId} onChange={e => setDealerId(e.target.value)}>
                             <option value="">All Dealers</option>
-                            {dealers.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                            {dealers.map(d => <option key={d._id} value={d._id}>{d.companyName || d.name}</option>)}
                         </select>
                     </div>
                     <div>
@@ -420,7 +426,10 @@ const ReplacementList = () => {
                                             <div className="font-medium text-gray-900">{item.replacementNo}</div>
                                             <div className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</div>
                                         </td>
-                                        <td>{item.dealer?.name}</td>
+                                        <td>
+                                            <div className="font-medium text-gray-900">{item.dealer?.companyName || item.dealer?.name}</div>
+                                            {item.dealer?.companyName && <div className="text-xs text-gray-500">{item.dealer?.name}</div>}
+                                        </td>
                                         <td>
                                             {item.status === 'Pending' && <span className="text-xs font-bold text-gray-500">Step 1: Receive</span>}
                                             {item.status === 'Checked' && <span className="text-xs font-bold text-blue-500">Step 2: Triage Done</span>}
@@ -447,9 +456,6 @@ const ReplacementList = () => {
                                         </td>
                                         <td className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                {/* Action Buttons based on Status */}
-
-                                                {/* Level 1: Check/Triage */}
                                                 {item.status === 'Pending' && (
                                                     <button
                                                         className="btn btn-sm btn-primary"
@@ -459,7 +465,6 @@ const ReplacementList = () => {
                                                     </button>
                                                 )}
 
-                                                {/* Level 2: Send to Factory */}
                                                 {item.status === 'Checked' && item.totalRepairable > 0 && (
                                                     <button
                                                         className="btn btn-sm btn-warning text-white"
@@ -472,7 +477,6 @@ const ReplacementList = () => {
                                                     </button>
                                                 )}
 
-                                                {/* Level 3: Receive from Factory */}
                                                 {item.status === 'Sent to Factory' && (
                                                     <button
                                                         className="btn btn-sm btn-success text-white"
@@ -525,7 +529,7 @@ const ReplacementList = () => {
                                         onChange={e => setCreateForm({ ...createForm, dealer: e.target.value })}
                                     >
                                         <option value="">Select Dealer</option>
-                                        {dealers.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                                        {dealers.map(d => <option key={d._id} value={d._id}>{d.companyName || d.name}</option>)}
                                     </select>
                                 </div>
 
@@ -534,12 +538,14 @@ const ReplacementList = () => {
                                         <div className="flex-1">
                                             <label className="text-xs mb-1 block">Product</label>
                                             <select
-                                                className="input w-full text-sm"
+                                                className="input flex-1"
                                                 value={newItem.product}
                                                 onChange={e => setNewItem({ ...newItem, product: e.target.value })}
                                             >
                                                 <option value="">Select Product...</option>
-                                                {products.map(p => <option key={p._id} value={p._id}>{p.modelName}</option>)}
+                                                {products.map(p => (
+                                                    <option key={p._id} value={p._id}>{p.modelName} (Price: {formatCurrency(p.salesPrice)})</option>
+                                                ))}
                                             </select>
                                         </div>
                                         <div className="w-24">
@@ -588,24 +594,26 @@ const ReplacementList = () => {
                             <button className="modal-close" onClick={() => setTriageItem(null)}><FiX /></button>
                         </div>
                         <div className="modal-body">
-                            <div className="alert alert-info mb-4 text-sm">
-                                <strong>Note:</strong> Accepted items (Good + Repairable) will be credited to the dealer's ledger immediately.
-                            </div>
                             <table className="table w-full">
                                 <thead>
                                     <tr>
-                                        <th>Product</th>
-                                        <th className="w-20">Claimed</th>
-                                        <th className="w-24 text-green-700">Good</th>
-                                        <th className="w-24 text-yellow-700">Repair</th>
-                                        <th className="w-24 text-red-700">Damage</th>
+                                        <th>Product Name</th>
+                                        <th style={{ width: '80px' }} className="text-center">Claimed</th>
+                                        <th style={{ width: '80px' }} className="text-center">Good</th>
+                                        <th style={{ width: '80px' }} className="text-center">Repair</th>
+                                        <th style={{ width: '80px' }} className="text-center">Bad</th>
+                                        <th className="text-right">Price</th>
+                                        <th className="text-right">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {triageData.map((row, idx) => (
                                         <tr key={row.product}>
-                                            <td className="text-sm">{row.productName}</td>
-                                            <td className="font-bold">{row.claimedQty}</td>
+                                            <td className="text-sm">
+                                                <div>{row.productName}</div>
+                                                <div className="text-xs text-gray-500">Sales: {formatCurrency(row.unitPrice)}</div>
+                                            </td>
+                                            <td className="font-bold text-center">{row.claimedQty}</td>
                                             <td>
                                                 <input
                                                     type="number" className="input w-full p-1 text-center border-green-300"
@@ -615,7 +623,7 @@ const ReplacementList = () => {
                                             </td>
                                             <td>
                                                 <input
-                                                    type="number" className="input w-full p-1 text-center border-yellow-300"
+                                                    type="number" className="input w-full p-1 text-center border-blue-300"
                                                     value={row.repairableQty}
                                                     onChange={e => handleTriageChange(idx, 'repairableQty', e.target.value)}
                                                 />
@@ -623,13 +631,27 @@ const ReplacementList = () => {
                                             <td>
                                                 <input
                                                     type="number" className="input w-full p-1 text-center border-red-300"
-                                                    value={row.damageQty}
-                                                    onChange={e => handleTriageChange(idx, 'damageQty', e.target.value)}
+                                                    value={row.badQty}
+                                                    onChange={e => handleTriageChange(idx, 'badQty', e.target.value)}
                                                 />
+                                            </td>
+                                            <td className="text-right text-gray-600 font-medium">
+                                                {formatCurrency(row.unitPrice)}
+                                            </td>
+                                            <td className="text-right font-bold text-green-700">
+                                                {formatCurrency((parseInt(row.goodQty || 0) + parseInt(row.repairableQty || 0)) * row.unitPrice)}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
+                                <tfoot>
+                                    <tr className="bg-gray-50 font-bold border-t-2">
+                                        <td colSpan="6" className="text-right p-2">Grand Total Return Amount:</td>
+                                        <td className="text-right p-2 text-green-800">
+                                            {formatCurrency(triageData.reduce((sum, row) => sum + (parseInt(row.goodQty || 0) + parseInt(row.repairableQty || 0)) * row.unitPrice, 0))}
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                         <div className="modal-footer">
@@ -663,7 +685,6 @@ const ReplacementList = () => {
                                         value={factoryData.highCostQty}
                                         onChange={e => setFactoryData({ ...factoryData, highCostQty: parseInt(e.target.value) })}
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">e.g. PCB Reset</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Low Cost (Minor)</label>
@@ -672,7 +693,6 @@ const ReplacementList = () => {
                                         value={factoryData.lowCostQty}
                                         onChange={e => setFactoryData({ ...factoryData, lowCostQty: parseInt(e.target.value) })}
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">e.g. Software/Mic</p>
                                 </div>
                             </div>
 
@@ -705,34 +725,43 @@ const ReplacementList = () => {
                             <button className="modal-close" onClick={() => setViewItem(null)}><FiX /></button>
                         </div>
                         <div className="modal-body">
-                            <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-                                <div><strong>Status:</strong> {viewItem.status}</div>
-                                <div><strong>Date:</strong> {new Date(viewItem.date).toLocaleDateString()}</div>
-                                <div className="col-span-2">
-                                    <strong>Ledger Credit:</strong> {viewItem.isLedgerAdjusted ? <span className="text-green-600">Applied</span> : <span className="text-gray-400">Not Applied</span>}
-                                </div>
-                            </div>
                             <table className="table w-full text-sm">
                                 <thead>
                                     <tr className="bg-gray-100">
+                                        <th>#</th>
                                         <th>Product</th>
-                                        <th>Claimed</th>
-                                        <th>Good</th>
-                                        <th>Repaired</th>
-                                        <th>Damage</th>
+                                        <th className="text-center">Claimed</th>
+                                        <th className="text-center">Good</th>
+                                        <th className="text-center">Repair</th>
+                                        <th className="text-center">Bad</th>
+                                        <th className="text-right">Unit Price</th>
+                                        <th className="text-right">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {viewItem.items.map(i => (
-                                        <tr key={i._id} className="border-b">
-                                            <td>{i.product?.modelName || i.productName}</td>
-                                            <td>{i.claimedQty}</td>
-                                            <td className="text-green-600">{i.goodQty}</td>
-                                            <td className="text-yellow-600">{i.repairableQty}</td>
-                                            <td className="text-red-600">{i.damageQty}</td>
+                                    {viewItem.items.map((it, idx) => (
+                                        <tr key={idx} className="border-b">
+                                            <td className="p-2">{idx + 1}</td>
+                                            <td className="p-2 font-medium">{it.product?.modelName || it.productName}</td>
+                                            <td className="p-2 text-center">{it.claimedQty}</td>
+                                            <td className="p-2 text-center text-success font-bold">{it.goodQty || 0}</td>
+                                            <td className="p-2 text-center text-info">{it.repairableQty || 0}</td>
+                                            <td className="p-2 text-center text-danger">{it.badQty || 0}</td>
+                                            <td className="p-2 text-right text-gray-600">{formatCurrency(it.unitPrice)}</td>
+                                            <td className="p-2 text-right font-bold text-green-700">
+                                                {formatCurrency((it.goodQty + it.repairableQty) * (it.unitPrice || 0))}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
+                                <tfoot className="bg-gray-50">
+                                    <tr className="font-bold">
+                                        <td colSpan="7" className="p-2 text-right">Grand Total Return Amount:</td>
+                                        <td className="p-2 text-right text-green-800">
+                                            {formatCurrency(viewItem.items.reduce((sum, it) => sum + (it.goodQty + it.repairableQty) * (it.unitPrice || 0), 0))}
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                             {viewItem.repairDetails && (
                                 <div className="mt-4 p-3 bg-gray-50 text-sm">

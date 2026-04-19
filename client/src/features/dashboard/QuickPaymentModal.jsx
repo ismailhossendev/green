@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentAPI, customerAPI } from '../../services/api';
 import { useBrand } from '../../App';
+import { formatCurrency } from '../../config/brandingConfig';
 import { FiDollarSign, FiUser, FiCreditCard, FiAlignLeft, FiX, FiCheckCircle } from 'react-icons/fi';
 import SearchableSelect from '../../components/ui/SearchableSelect';
 import toast from 'react-hot-toast';
@@ -46,8 +47,8 @@ const QuickPaymentModal = ({ isOpen, onClose }) => {
             const response = await customerAPI.getCustomers({ search: query, limit: 10 });
             return response.data.customers.map(c => ({
                 value: c._id,
-                label: c.name,
-                subLabel: c.companyName || c.phone,
+                label: c.companyName || c.name,
+                subLabel: `${c.companyName ? '(' + c.name + ') • ' : ''}${c.phone}`,
                 ...c
             }));
         } catch (error) {
@@ -108,6 +109,16 @@ const QuickPaymentModal = ({ isOpen, onClose }) => {
                             defaultOptions={true}
                             className="premium-select"
                         />
+
+                        {/* Due Indicator */}
+                        {selectedCustomer && (
+                            <div className="flex items-center justify-between px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl animate-in slide-in-from-top-2">
+                                <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider">Current Due</span>
+                                <span className="text-sm font-black text-red-400 tabular-nums">
+                                    {formatCurrency(selectedCustomer.totalDues || 0)}
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

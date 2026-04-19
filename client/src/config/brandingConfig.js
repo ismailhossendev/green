@@ -5,15 +5,15 @@
 
 export const BrandingConfig = {
     // Brand Names
-    mainBrand: "Green Tel",
+    mainBrand: "GREEN TEL COMMUNICATION",
     secondaryBrand: "Green Star",
-    companyName: "Green Tel & Green Star",
+    companyName: "GREEN TEL COMMUNICATION",
 
     // Contact Information
     contact: {
-        phone: "+8801XXXXXXXXX",
+        phone: "+8801774409519",
         email: "info@greentel.com",
-        address: "Your Office Address, Bangladesh",
+        address: "Plot 1039, Master Lane, Uttarkhan Dhaka",
         website: "www.greentel.bd"
     },
 
