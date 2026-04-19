@@ -16,6 +16,7 @@ const PurchaseCreate = ({ onClose }) => {
     const [paidAmount, setPaidAmount] = useState(0);
     const [note, setNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [filterType, setFilterType] = useState('All');
 
     const subTotal = items.reduce((acc, item) => acc + (item.qty * item.price), 0);
     const grandTotal = subTotal;
@@ -31,7 +32,10 @@ const PurchaseCreate = ({ onClose }) => {
     };
 
     const loadProducts = async (query) => {
-        const response = await inventoryAPI.getProducts({ brand: currentBrand, search: query, limit: 20 });
+        const params = { brand: currentBrand, search: query, limit: 20 };
+        if (filterType !== 'All') params.type = filterType;
+        
+        const response = await inventoryAPI.getProducts(params);
         return response.data.products.map(p => ({
             ...p,
             label: p.modelName,
@@ -129,13 +133,32 @@ const PurchaseCreate = ({ onClose }) => {
                         </div>
 
                         <div className="input-group mb-4">
-                            <label className="input-label">Add Product</label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="input-label" style={{ marginBottom: 0 }}>Add Product</label>
+                                <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                                    {['All', 'Product', 'Packet'].map(t => (
+                                        <button
+                                            key={t}
+                                            type="button"
+                                            onClick={() => setFilterType(t)}
+                                            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                                                filterType === t 
+                                                ? 'bg-white shadow-sm text-primary' 
+                                                : 'text-slate-500 hover:text-slate-700'
+                                            }`}
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                             <SearchableSelect
-                                placeholder="Search product by model name..."
+                                placeholder={`Search ${filterType === 'All' ? 'items' : filterType.toLowerCase() + 's'} by model name...`}
                                 loadOptions={loadProducts}
                                 onChange={handleProductSelect}
                                 labelKey="label"
                                 resetOnSelect={true}
+                                key={filterType} // Force reset search when tab changes
                             />
                         </div>
 

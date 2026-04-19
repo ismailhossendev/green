@@ -97,6 +97,7 @@ export const supplierAPI = {
     getSummary: () => api.get('/suppliers/summary'),
     createSupplier: (data) => api.post('/suppliers', data),
     updateSupplier: (id, data) => api.put(`/suppliers/${id}`, data),
+    paySupplier: (id, data) => api.post(`/suppliers/${id}/pay`, data),
     deleteSupplier: (id) => api.delete(`/suppliers/${id}`)
 };
 

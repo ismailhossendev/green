@@ -200,10 +200,10 @@ const LedgerView = () => {
         return '<html><head><title>Party Ledger - ' + dealerName + '</title>' +
             '<style>' +
             '* { margin:0;padding:0;box-sizing:border-box;color:#000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
-            'body { font-family:"Segoe UI",Arial,sans-serif;padding:8mm;color:#000 !important;font-size:9px;background:#fff !important;line-height:1.2; }' +
+            'body { font-family:Calibri,"Segoe UI",Arial,sans-serif;padding:8mm;color:#000 !important;font-size:11px;background:#fff !important;line-height:1.2; }' +
             '@page { size:portrait;margin:0; }' +
             'table { width:100%;border-collapse:collapse;border:1.5px solid #000; }' +
-            'th { background:#f2f2f2 !important;color:#000 !important;padding:4px 5px;font-size:8px;border:1px solid #000;text-transform:uppercase;font-weight:700;vertical-align:top; }' +
+            'th { background:#f2f2f2 !important;color:#000 !important;padding:4px 5px;font-size:10px;border:1px solid #000;text-transform:uppercase;font-weight:700;vertical-align:top; }' +
             'td { border:1px solid #000;padding:3px 5px;vertical-align:top; }' +
             '.header-section { margin-bottom:15px; overflow:hidden; }' +
             '.header-left { float:left; width:65%; }' +

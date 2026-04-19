@@ -135,7 +135,7 @@ router.get('/:id', protect, canAccessModule('purchase'), async (req, res) => {
 // @access  Private
 router.post('/', protect, canAccessModule('purchase'), async (req, res) => {
     try {
-        const { supplier, brand, items, paidAmount, note } = req.body;
+        const { supplier, brand, date, items, paidAmount, note } = req.body;
 
         // Validate supplier
         const supplierData = await Supplier.findById(supplier);
@@ -178,6 +178,7 @@ router.post('/', protect, canAccessModule('purchase'), async (req, res) => {
         const purchase = await Purchase.create({
             supplier,
             brand,
+            date: date || new Date(),
             items: processedItems,
             totalQty,
             totalAmount,
@@ -193,7 +194,7 @@ router.post('/', protect, canAccessModule('purchase'), async (req, res) => {
         supplierData.totalDues += dues;
         supplierData.lastPurchaseNo = purchase.purchaseNo;
         supplierData.lastPurchaseAmount = totalAmount;
-        supplierData.lastPurchaseDate = new Date();
+        supplierData.lastPurchaseDate = date || new Date();
         await supplierData.save();
 
         res.status(201).json(purchase);

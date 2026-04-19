@@ -4,6 +4,8 @@ import { supplierAPI } from '../../services/api';
 import { formatCurrency } from '../../config/brandingConfig';
 import { FiPlus, FiSearch, FiTruck, FiEdit2, FiTrash2, FiDollarSign, FiMapPin, FiPhone } from 'react-icons/fi';
 import CrudModal from '../../components/ui/CrudModal';
+import StockEditModal from '../inventory/StockEditModal';
+import SupplierPaymentModal from './SupplierPaymentModal';
 import toast from 'react-hot-toast';
 
 const SupplierList = () => {
@@ -13,6 +15,8 @@ const SupplierList = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
     const [modalMode, setModalMode] = useState('add');
+    const [payModalOpen, setPayModalOpen] = useState(false);
+    const [payingSupplier, setPayingSupplier] = useState(null);
 
     const { data, isLoading } = useQuery({
         queryKey: ['suppliers', search, typeFilter],
@@ -227,6 +231,15 @@ const SupplierList = () => {
                                     <FiEdit2 size={13} /> Edit
                                 </button>
                                 <button
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-emerald-400/80 hover:bg-emerald-500/10 text-[11px] font-semibold transition-all active:bg-emerald-500/20"
+                                    onClick={() => {
+                                        setPayingSupplier(supplier);
+                                        setPayModalOpen(true);
+                                    }}
+                                >
+                                    <FiDollarSign size={13} /> Pay
+                                </button>
+                                <button
                                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-red-400/70 hover:bg-red-500/10 text-[11px] font-semibold transition-all active:bg-red-500/20"
                                     onClick={() => handleDelete(supplier._id)}
                                 >
@@ -290,6 +303,16 @@ const SupplierList = () => {
                                     <td className="px-5 py-4">
                                         <div className="flex items-center justify-center gap-1.5">
                                             <button
+                                                className="p-1.5 text-emerald-500 hover:text-white hover:bg-emerald-600 rounded-md transition-all"
+                                                title="Record Payment"
+                                                onClick={() => {
+                                                    setPayingSupplier(supplier);
+                                                    setPayModalOpen(true);
+                                                }}
+                                            >
+                                                <FiDollarSign size={14} />
+                                            </button>
+                                            <button
                                                 className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-700 rounded-md transition-all"
                                                 title="Edit"
                                                 onClick={() => handleEdit(supplier)}
@@ -322,6 +345,16 @@ const SupplierList = () => {
                 onSubmit={handleSubmit}
                 loading={createMutation.isPending || updateMutation.isPending}
             />
+
+            {payModalOpen && payingSupplier && (
+                <SupplierPaymentModal 
+                    supplier={payingSupplier} 
+                    onClose={() => {
+                        setPayModalOpen(false);
+                        setPayingSupplier(null);
+                    }} 
+                />
+            )}
         </div>
     );
 };

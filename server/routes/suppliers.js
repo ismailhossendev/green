@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Supplier = require('../models/Supplier');
+const Payment = require('../models/Payment');
 const { protect } = require('../middleware/auth');
 const { authorize, canAccessModule } = require('../middleware/rbac');
 
@@ -162,6 +163,47 @@ router.delete('/:id', protect, authorize('Admin'), async (req, res) => {
         }
 
         res.json({ message: 'Supplier deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   POST /api/suppliers/:id/pay
+// @desc    Record a payment to a supplier
+// @access  Private
+router.post('/:id/pay', protect, canAccessModule('inventory'), async (req, res) => {
+    try {
+        const { amount, paymentMethod, description, date } = req.body;
+
+        const supplier = await Supplier.findById(req.params.id);
+        if (!supplier) {
+            return res.status(404).json({ message: 'Supplier not found' });
+        }
+
+        // 1. Create Payment Record
+        const payment = await Payment.create({
+            type: 'Supplier',
+            referenceId: supplier._id,
+            referenceModel: 'Supplier',
+            referenceName: supplier.name,
+            amount,
+            paymentMethod: paymentMethod || 'Cash',
+            description: description || `Manual payment to vendor`,
+            date: date || new Date(),
+            addedBy: req.user._id
+        });
+
+        // 2. Update Supplier Totals
+        supplier.totalPayment += parseFloat(amount);
+        supplier.totalDues -= parseFloat(amount);
+        await supplier.save();
+
+        res.json({
+            message: 'Payment recorded successfully',
+            payment,
+            updatedDues: supplier.totalDues
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error', error: error.message });

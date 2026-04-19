@@ -6,6 +6,7 @@ import { getBrandLogo, BrandingConfig, formatCurrency } from '../../config/brand
 import { customerAPI, inventoryAPI, salesAPI } from '../../services/api';
 import { FiPlus, FiTrash2, FiSave, FiAlertCircle } from 'react-icons/fi';
 import SearchableSelect from '../../components/ui/SearchableSelect';
+import StockEditModal from '../inventory/StockEditModal';
 import toast from 'react-hot-toast';
 import './InvoiceCreate.css';
 
@@ -29,6 +30,7 @@ const InvoiceCreate = () => {
 
     // POS Search State
     const [productSearchKey, setProductSearchKey] = useState(0);
+    const [stockEditProduct, setStockEditProduct] = useState(null);
 
     // Update dues when customer selected
     useEffect(() => {
@@ -112,6 +114,7 @@ const InvoiceCreate = () => {
                     : product.salesPrice;
 
                 return [
+                    ...prevItems,
                     {
                         id: Date.now(),
                         product: product,
@@ -119,8 +122,7 @@ const InvoiceCreate = () => {
                         qty: 1,
                         price: price,
                         isCombined: false
-                    },
-                    ...prevItems
+                    }
                 ];
             }
         });
@@ -241,16 +243,33 @@ const InvoiceCreate = () => {
                         </div>
 
                         {/* Product Search */}
-                        <div className="pos-search-area">
-                            <SearchableSelect
-                                key={productSearchKey}
-                                placeholder="🔍 Scan or Search Product..."
-                                loadOptions={loadProducts}
-                                onChange={handleProductSelect}
-                                labelKey="label"
-                                defaultOptions={false}
-                                className="pos-search-bar"
-                            />
+                        <div className="pos-search-area" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1 }}>
+                                <SearchableSelect
+                                    key={productSearchKey}
+                                    placeholder="🔍 Scan or Search Product..."
+                                    loadOptions={loadProducts}
+                                    onChange={handleProductSelect}
+                                    labelKey="label"
+                                    defaultOptions={false}
+                                    className="pos-search-bar"
+                                />
+                            </div>
+                            <button 
+                                className="btn btn-secondary" 
+                                style={{ height: '42px', padding: '0 12px' }}
+                                title="Quick Stock Edit"
+                                onClick={() => {
+                                    // If items in cart, allow editing the last one or show search
+                                    if (items.length > 0) {
+                                        setStockEditProduct(items[items.length - 1].product);
+                                    } else {
+                                        toast.info('Search and select a product first to edit stock');
+                                    }
+                                }}
+                            >
+                                📦
+                            </button>
                         </div>
 
                         {/* Item List */}
@@ -475,6 +494,13 @@ const InvoiceCreate = () => {
                     </div>
                 </div>
             </div>
+
+            {stockEditProduct && (
+                <StockEditModal 
+                    product={stockEditProduct} 
+                    onClose={() => setStockEditProduct(null)} 
+                />
+            )}
         </div>
     );
 };
